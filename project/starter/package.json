@@ -1,0 +1,58 @@
+{
+  "name": "claude-multiagent-code-review-starter",
+  "version": "1.0.0",
+  "description": "Starter project for building a multi-agent code review system using Claude Agent SDK",
+  "type": "module",
+
+  "main": "dist/main.js",
+  "module": "dist/main.js",
+  "exports": {
+    ".": "./dist/main.js"
+  },
+  
+  "author": "Udacity",
+
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsx src/main.ts",
+    "start": "node dist/main.js",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "lint": "tsc --noEmit"
+  },
+
+  "keywords": [
+    "claude",
+    "agent-sdk",
+    "code-review",
+    "multi-agent",
+    "ai"
+  ],
+
+  "license": "ISC",
+
+  "dependencies": {
+    "@anthropic-ai/claude-agent-sdk": "^0.1.55",
+    "@modelcontextprotocol/sdk": "latest",
+    "zod": "^3.22.0",
+    "zod-to-json-schema": "^3.22.0",
+    "dotenv": "^16.0.0",
+    "winston": "^3.11.0"
+  },
+
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.3.0",
+    "tsx": "^4.7.0",
+    "vitest": "^1.0.0"
+  },
+
+  "vitest": {
+    "environment": "node",
+    "globals": true
+  },
+
+  "engines": {
+    "node": ">=18"
+  }
+}
