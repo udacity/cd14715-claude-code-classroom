@@ -1,0 +1,35 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler", // modern, faster, matches Node + bundlers
+    "lib": ["ES2022"],
+    "outDir": "./dist",
+    "rootDir": "./src",
+
+    // Strictness
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+
+    // Interop
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+
+    // DX
+    "skipLibCheck": true,
+    "resolveJsonModule": true,
+    "forceConsistentCasingInFileNames": true,
+    "isolatedModules": true,
+
+    // Declarations + source maps
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+
+    // Node types
+    "types": ["node"]
+  },
+  "include": ["src"],
+  "exclude": ["dist", "node_modules", "tests"]
+}
+
