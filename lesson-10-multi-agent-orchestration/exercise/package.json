@@ -1,0 +1,26 @@
+{
+  "name": "sales-qualifier",
+  "version": "1.0.0",
+  "description": "Exercise: Build a multi-agent sales intelligence system with company researcher, competitive analyzer, and qualification scorer agents",
+  "main": "src/index.ts",
+  "scripts": {
+    "start": "npx tsx src/index.ts"
+  },
+  "keywords": [
+    "claude",
+    "agent-sdk",
+    "multi-agent",
+    "orchestration",
+    "sales-intelligence",
+    "lead-qualification"
+  ],
+  "author": "Udacity",
+  "license": "ISC",
+  "type": "module",
+  "dependencies": {
+    "@anthropic-ai/claude-agent-sdk": "^0.1.55",
+    "dotenv": "^16.4.5",
+    "zod": "^3.24.1",
+    "zod-to-json-schema": "^3.24.1"
+  }
+}

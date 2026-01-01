@@ -1,0 +1,25 @@
+{
+  "name": "product-review-analyzer",
+  "version": "1.0.0",
+  "description": "Demo: Use Zod schemas and JSON Schema to enforce structured outputs from agents for product review analysis",
+  "main": "src/index.ts",
+  "scripts": {
+    "start": "npx tsx src/index.ts"
+  },
+  "keywords": [
+    "claude",
+    "agent-sdk",
+    "structured-outputs",
+    "zod",
+    "json-schema"
+  ],
+  "author": "Udacity",
+  "license": "ISC",
+  "type": "module",
+  "dependencies": {
+    "@anthropic-ai/claude-agent-sdk": "^0.1.55",
+    "dotenv": "^16.4.5",
+    "zod": "^3.24.1",
+    "zod-to-json-schema": "^3.24.1"
+  }
+}

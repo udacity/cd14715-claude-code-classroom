@@ -1,0 +1,20 @@
+{
+  "name": "tax-calculator-tool",
+  "version": "1.0.0",
+  "description": "Demo: Create a custom tax calculator tool for agents using Zod schemas and the Claude Agent SDK",
+  "main": "src/index.ts",
+  "scripts": {
+    "start": "npx tsx src/index.ts",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "claude",
+    "agent-sdk",
+    "custom-tools",
+    "zod",
+    "financial-calculations"
+  ],
+  "author": "Udacity",
+  "license": "ISC",
+  "type": "module"
+}
