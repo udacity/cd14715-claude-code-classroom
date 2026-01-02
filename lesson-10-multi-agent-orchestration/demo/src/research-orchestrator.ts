@@ -1,14 +1,11 @@
 /**
  * Research Orchestrator - Deliverable
  *
- * Coordinates multiple specialized agents to produce comprehensive research.
+ * Uses subagents pattern to coordinate specialized agents for research.
  */
 
 import "dotenv/config";
 import { query } from "@anthropic-ai/claude-agent-sdk";
-import { researcherPrompt, researcherConfig } from "./agents/researcher.js";
-import { analyzerPrompt, analyzerConfig } from "./agents/analyzer.js";
-import { summarizerPrompt, summarizerConfig } from "./agents/summarizer.js";
 
 // -----------------------------------------------------------------------------
 // Exported Types
@@ -16,89 +13,113 @@ import { summarizerPrompt, summarizerConfig } from "./agents/summarizer.js";
 
 export interface ResearchResult {
   topic: string;
-  research: string;
-  analysis: string;
-  summary: string;
   finalReport: string;
 }
 
 // -----------------------------------------------------------------------------
-// Orchestrator Prompt
+// Subagent Definitions
 // -----------------------------------------------------------------------------
 
-const orchestratorPrompt = `You are a research orchestrator coordinating specialized agents.
+const subagents = {
+  researcher: {
+    description: "Research specialist that gathers information from web sources",
+    prompt: `You are a research specialist.
 
-When given a research topic, you will coordinate three agents in sequence:
+When asked to research a topic:
+1. Use WebSearch to find authoritative sources
+2. Gather diverse perspectives and data points
+3. Return findings in a structured format
 
-1. RESEARCH PHASE
-   First, gather information about the topic.
-   Conduct thorough research using web search capabilities.
-   Focus on finding credible sources, key facts, and data points.
+Focus on credible, recent sources. Be thorough but concise.`,
+    tools: ["WebSearch"],
+    model: "sonnet",
+  },
 
-2. ANALYSIS PHASE
-   Then, analyze the research findings.
-   Identify patterns, trends, and insights.
-   Note any gaps or contradictions.
+  analyzer: {
+    description: "Analysis specialist that finds patterns and insights in data",
+    prompt: `You are a data analysis specialist.
 
-3. SUMMARIZATION PHASE
-   Finally, create a concise summary.
-   Distill findings into key points.
-   Provide actionable recommendations.
+When given research findings:
+1. Identify key patterns and trends
+2. Find connections between data points
+3. Highlight important insights
+4. Note any gaps or contradictions
 
-4. FINAL REPORT
-   Combine all outputs into a comprehensive report with:
-   - Executive Summary (from summarizer)
-   - Key Research Findings (from researcher)
-   - Analysis and Insights (from analyzer)
-   - Recommendations
+Provide analytical depth, not just summaries.`,
+    tools: [],
+    model: "sonnet",
+  },
 
-Execute sequentially since each phase depends on the previous results.`;
+  summarizer: {
+    description: "Summarization specialist that creates clear, concise reports",
+    prompt: `You are a summarization specialist.
+
+When given research and analysis:
+1. Distill into key points
+2. Create an executive summary
+3. Highlight actionable recommendations
+
+Be concise but comprehensive.`,
+    tools: [],
+    model: "haiku",
+  },
+};
 
 // -----------------------------------------------------------------------------
 // Main Function
 // -----------------------------------------------------------------------------
 
 export async function conductResearch(topic: string): Promise<ResearchResult> {
-  const fullPrompt = `${orchestratorPrompt}
+  const orchestratorPrompt = `You are a research orchestrator coordinating specialized subagents.
 
-Research Topic: "${topic}"
+You have access to three subagents via the Task tool:
+- researcher: Gathers information using web search
+- analyzer: Finds patterns and insights in data
+- summarizer: Creates concise summaries and recommendations
 
-Begin by researching this topic, then analyze the findings, and finally summarize everything into a comprehensive report.`;
+For the topic "${topic}", coordinate these agents in sequence:
 
-  let research = "";
-  let analysis = "";
-  let summary = "";
+1. RESEARCH PHASE: Use the researcher subagent to gather information
+2. ANALYSIS PHASE: Use the analyzer subagent to find patterns in the research
+3. SUMMARY PHASE: Use the summarizer subagent to create a final report
+
+After all phases complete, combine the outputs into a final comprehensive report with:
+- Executive Summary
+- Key Research Findings
+- Analysis and Insights
+- Recommendations
+
+Begin now.`;
+
   let finalReport = "";
 
   for await (const message of query({
-    prompt: fullPrompt,
+    prompt: orchestratorPrompt,
     options: {
-      allowedTools: ["WebSearch"],
-      maxTurns: 10,
+      allowedTools: ["Task"],
+      agents: subagents,
+      maxTurns: 15,
     },
   })) {
-    if (message.type === "result" && message.subtype === "success") {
+    if (message.type === "assistant") {
+      const content = message.message?.content;
+      if (Array.isArray(content)) {
+        for (const block of content) {
+          if (block.type === "tool_use" && block.name === "Task") {
+            const input = block.input as { description?: string };
+            console.log(`[Orchestrator]: Invoking subagent - ${input.description || "task"}`);
+          }
+        }
+      }
+    } else if (message.type === "result" && message.subtype === "success") {
       finalReport = message.result;
-
-      // Extract sections from the report
-      const researchMatch = finalReport.match(/## Research Findings([\s\S]*?)(?=## Analysis|## Key Points|$)/i);
-      const analysisMatch = finalReport.match(/## Analysis([\s\S]*?)(?=## Summary|## Executive|$)/i);
-      const summaryMatch = finalReport.match(/## (Executive )?Summary([\s\S]*?)(?=## Recommendations|$)/i);
-
-      research = researchMatch ? researchMatch[1].trim() : "Research conducted inline";
-      analysis = analysisMatch ? analysisMatch[1].trim() : "Analysis conducted inline";
-      summary = summaryMatch ? (summaryMatch[2] || summaryMatch[0]).trim() : "Summary conducted inline";
+    } else if (message.type === "result") {
+      throw new Error(`Research failed: ${message.subtype}`);
     }
   }
 
   return {
     topic,
-    research,
-    analysis,
-    summary,
     finalReport,
   };
 }
-
-// Export agent configs for reference
-export { researcherConfig, analyzerConfig, summarizerConfig };
