@@ -1,0 +1,18 @@
+CONSULTING SERVICES AGREEMENT
+
+Date: February 1, 2024
+Consultant: Jane Smith Consulting LLC
+Client: TechStartup Inc.
+
+Scope: Strategic product consulting for mobile app development
+Duration: 3 months (Feb 1 - Apr 30, 2024)
+Rate: $200/hour, estimated 40 hours/month
+Payment: Net 15 from invoice date
+
+Deliverables:
+- Product roadmap document
+- Competitive analysis report
+- Weekly strategy calls
+
+Termination: 2 weeks notice by either party
+IP: All deliverables become property of Client upon payment

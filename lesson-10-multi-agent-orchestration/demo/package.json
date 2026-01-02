@@ -1,0 +1,23 @@
+{
+  "name": "research-orchestrator",
+  "version": "1.0.0",
+  "description": "Demo: Build a multi-agent system with an orchestrator coordinating researcher, analyzer, and summarizer agents",
+  "main": "src/index.ts",
+  "scripts": {
+    "start": "npx tsx src/index.ts"
+  },
+  "keywords": [
+    "claude",
+    "agent-sdk",
+    "multi-agent",
+    "orchestration",
+    "research-assistant"
+  ],
+  "author": "Udacity",
+  "license": "ISC",
+  "type": "module",
+  "dependencies": {
+    "@anthropic-ai/claude-agent-sdk": "^0.1.55",
+    "dotenv": "^16.4.5"
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "name": "tax-calculator-tool",
+  "version": "1.0.0",
+  "description": "Demo: Create a custom tax calculator tool for agents using Zod schemas and the Claude Agent SDK",
+  "main": "src/index.ts",
+  "scripts": {
+    "start": "npx tsx src/index.ts",
+    "test": "npx tsx src/index.ts"
+  },
+  "keywords": [
+    "claude",
+    "agent-sdk",
+    "custom-tools",
+    "zod",
+    "financial-calculations"
+  ],
+  "author": "Udacity",
+  "license": "ISC",
+  "type": "module",
+  "dependencies": {
+    "@anthropic-ai/claude-agent-sdk": "^0.1.76",
+    "dotenv": "^17.2.3"
+  },
+  "devDependencies": {
+    "@types/node": "^25.0.3",
+    "tsx": "^4.21.0",
+    "typescript": "^5.9.3"
+  }
+}

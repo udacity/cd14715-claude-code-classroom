@@ -1,0 +1,29 @@
+{
+  "name": "contract-standardizer-agent",
+  "version": "1.0.0",
+  "description": "Exercise: Build a contract standardization agent using the Claude Agent SDK that converts vendor contracts into a standardized template for legal review",
+  "main": "src/contract-standardizer.ts",
+  "scripts": {
+    "start": "npx tsx src/index.ts",
+    "test": "npx tsx src/index.ts"
+  },
+  "keywords": [
+    "claude",
+    "agent-sdk",
+    "contract-standardizer",
+    "legal-automation",
+    "ai-agent"
+  ],
+  "author": "Udacity",
+  "license": "ISC",
+  "type": "module",
+  "dependencies": {
+    "@anthropic-ai/claude-agent-sdk": "^0.1.76",
+    "dotenv": "^17.2.3"
+  },
+  "devDependencies": {
+    "@types/node": "^25.0.3",
+    "tsx": "^4.21.0",
+    "typescript": "^5.9.3"
+  }
+}

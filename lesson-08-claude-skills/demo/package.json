@@ -1,0 +1,23 @@
+{
+  "name": "email-etiquette-skill",
+  "version": "1.0.0",
+  "description": "Demo: Create a Claude Skill for email etiquette analysis that agents can invoke for professional communication guidance",
+  "main": "src/index.ts",
+  "scripts": {
+    "start": "npx tsx src/index.ts"
+  },
+  "keywords": [
+    "claude",
+    "agent-sdk",
+    "skills",
+    "email-etiquette",
+    "reusable-expertise"
+  ],
+  "author": "Udacity",
+  "license": "ISC",
+  "type": "module",
+  "dependencies": {
+    "@anthropic-ai/claude-agent-sdk": "^0.1.55",
+    "dotenv": "^16.4.5"
+  }
+}
