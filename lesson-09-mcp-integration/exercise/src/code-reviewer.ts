@@ -9,7 +9,7 @@ import "dotenv/config";
 import { z } from "zod";
 import { zodToJsonSchema } from "zod-to-json-schema";
 import { query } from "@anthropic-ai/claude-agent-sdk";
-import { mcpServersConfig, eslintTools } from "./config/mcp.config.js";
+import { eslintTools, mcpServersConfig } from "./config/mcp.config";
 
 // -----------------------------------------------------------------------------
 // Exported Types
@@ -61,61 +61,67 @@ export const CodeQualityReportJSONSchema = zodToJsonSchema(CodeQualityReportSche
 // Main Function
 // -----------------------------------------------------------------------------
 
-export async function reviewCodeQuality(
-  code: string,
-  filename: string = "code.js"
-): Promise<CodeQualityReport> {
+export async function reviewCodeFile(filePath: string): Promise<any> {
+
   const prompt = `You are a code quality reviewer with access to ESLint via MCP.
 
-Analyze the following code and provide a comprehensive quality report:
+Analyze the JavaScript file and provide a comprehensive quality report.
 
-\`\`\`javascript
-// ${filename}
-${code}
-\`\`\`
+File path: ${filePath}
 
 ANALYSIS REQUIREMENTS:
 
-1. Identify all linting issues with:
+1. Use the mcp__eslint__lint tool to lint the file at the path above
+
+2. Use the Read tool to read the file at the path above
+
+3. Identify all linting issues with:
    - Line and column number
    - Severity (error, warning, info)
    - ESLint rule violated
    - Description of the problem
    - How to fix it
 
-2. Categorize issues:
+4. Categorize issues:
    - formatting: Spacing, indentation, quotes, semicolons
    - bestPractices: no-var, no-eval, prefer-const, etc.
    - potentialBugs: no-unused-vars, no-cond-assign, etc.
    - other: Any other issues
 
-3. Calculate quality score (0-100):
+5. Calculate quality score (0-100):
    - Start at 100
    - Subtract 10 for each error
    - Subtract 5 for each warning
    - Subtract 2 for each info
    - Minimum score is 0
 
-4. Provide 2-4 actionable recommendations to improve the code.
+6. Provide 2-4 actionable recommendations to improve the code.
 
 Return the complete quality report in the structured JSON format.`;
 
   for await (const message of query({
     prompt,
     options: {
-      mcpServers: {
-        eslint: mcpServersConfig.eslint,
-      },
-      allowedTools: eslintTools,
-      outputFormat: {
-        type: "json_schema",
-        schema: CodeQualityReportJSONSchema,
-      },
-      maxTurns: 5,
+      mcpServers: mcpServersConfig,
+      allowedTools: [...eslintTools, 'Read'],
     },
   })) {
-    if (message.type === "result" && message.structured_output) {
-      return CodeQualityReportSchema.parse(message.structured_output);
+    if (message.type === "assistant") {
+      const content = message.message?.content;
+      if (Array.isArray(content)) {
+        for (const block of content) {
+          if (block.type === "tool_use") {
+       
+              console.log(`[Tool]: ${block.name} ESLint Tool Invoked`);
+            
+          }
+        }
+      }
+    } else if (message.type === "result" && message.subtype === "success") {
+      return message.result;
+    } else if (message.type === "result") {
+      console.error(`[Error]: ${message.subtype}`);
+      throw new Error(`Failed to generate code quality report: ${message.subtype}`);
     }
   }
 

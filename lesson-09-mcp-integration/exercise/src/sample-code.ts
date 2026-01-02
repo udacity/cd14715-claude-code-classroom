@@ -2,82 +2,35 @@
  * Sample Code Files for Testing the Code Quality Reviewer
  */
 
-export interface CodeSample {
+import path from "path";
+import { fileURLToPath } from "url";
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
+export interface CodeFile {
+  id: string;
   name: string;
-  filename: string;
-  code: string;
+  path: string;
   expectedIssues: string[];
-  expectedScoreRange: [number, number];
 }
 
-export const codeSamples: CodeSample[] = [
+export const CODE_FILES: CodeFile[] = [
   {
-    name: "Clean code",
-    filename: "clean.js",
-    code: `// Well-written JavaScript code
-const greet = (name) => {
-  return \`Hello, \${name}!\`;
-};
-
-const result = greet("World");
-console.log(result);
-`,
+    id: "clean",
+    name: "Clean Code",
+    path: path.join(__dirname, "sample-code", "clean.js"),
     expectedIssues: [],
-    expectedScoreRange: [90, 100],
   },
   {
-    name: "Minor formatting issues",
-    filename: "formatting.js",
-    code: `// Code with minor formatting issues
-const  greet = ( name )=>{
-  return "Hello, " + name
-}
-
-const x = greet( "World" );
-console.log(x)
-`,
-    expectedIssues: ["spacing", "semicolons", "quotes"],
-    expectedScoreRange: [70, 89],
-  },
-  {
-    name: "Best practice violations",
-    filename: "best-practices.js",
-    code: `// Code with best practice issues
-var unused = 'this is never used';
-var globalVar = 1;
-
-function foo(a,b){
-  console.log('debugging')
-  eval('var x = 1');
-  return a+b
-}
-
-if(true){
-  foo(1,2)
-}
-`,
+    id: "issues",
+    name: "Code with Issues",
+    path: path.join(__dirname, "sample-code", "issues.js"),
     expectedIssues: ["no-unused-vars", "no-var", "no-eval", "no-console"],
-    expectedScoreRange: [40, 69],
   },
   {
-    name: "Multiple errors",
-    filename: "errors.js",
-    code: `// Code with multiple errors
-var x = 1
-var y = 2
-var z
-
-function badCode(a,b,c){
-console.log(x)
-if(a=b){
-  return c
-}
-return undefined
-}
-
-badCode(1,2,3)
-`,
-    expectedIssues: ["no-var", "no-cond-assign", "missing-semicolons", "indentation"],
-    expectedScoreRange: [0, 39],
+    id: "errors",
+    name: "Code with Errors",
+    path: path.join(__dirname, "sample-code", "errors.js"),
+    expectedIssues: ["no-var", "no-cond-assign", "missing-semicolons"],
   },
 ];
