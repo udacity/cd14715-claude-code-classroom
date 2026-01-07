@@ -1,0 +1,18 @@
+MASTER SERVICES AGREEMENT
+
+Effective Date: March 1, 2024
+Vendor: GlobalSupply Co.
+Customer: Manufacturing Corp.
+
+Services: Supply chain management and logistics
+Contract Value: $500,000 annually
+Payment Terms: Net 45
+
+Liability Cap: $2,000,000
+Insurance Required: $5,000,000 general liability
+
+Termination: 90 days notice required
+Auto-renewal: Yes, for successive 1-year terms unless cancelled
+
+Data Protection: Vendor will comply with GDPR and CCPA requirements.
+Confidentiality: Perpetual for trade secrets.

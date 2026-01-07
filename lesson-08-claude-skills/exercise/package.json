@@ -1,0 +1,23 @@
+{
+  "name": "sql-optimization-skill",
+  "version": "1.0.0",
+  "description": "Exercise: Build a Claude Skill for SQL query optimization that detects anti-patterns, recommends indexes, and suggests query rewrites",
+  "main": "src/index.ts",
+  "scripts": {
+    "start": "npx tsx src/index.ts"
+  },
+  "keywords": [
+    "claude",
+    "agent-sdk",
+    "skills",
+    "sql-optimization",
+    "database-performance"
+  ],
+  "author": "Udacity",
+  "license": "ISC",
+  "type": "module",
+  "dependencies": {
+    "@anthropic-ai/claude-agent-sdk": "^0.1.55",
+    "dotenv": "^16.4.5"
+  }
+}
