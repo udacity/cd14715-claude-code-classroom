@@ -40,7 +40,7 @@ Main coordinator that:
 
 ```bash
 # Clone repository
-cd project/solution
+cd project/starter
 
 # Install dependencies
 npm install
@@ -58,7 +58,7 @@ ANTHROPIC_API_KEY=sk-ant-your-key-here
 GITHUB_TOKEN=ghp_your-token-here
 
 # REQUIRED: Absolute path to project root (contains .claude/skills/)
-PROJECT_ROOT=/absolute/path/to/project/solution
+PROJECT_ROOT=/absolute/path/to/project/starter
 
 LOG_LEVEL=info
 ```
@@ -154,7 +154,7 @@ The system generates a structured JSON report:
 ## Project Structure
 
 ```
-project/solution/
+project/starter/
 ├── src/
 │   ├── main.ts                 # Entry point
 │   ├── orchestrator.ts         # Main orchestrator
