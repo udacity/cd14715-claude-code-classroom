@@ -152,9 +152,9 @@ async function main() {
   console.log("=".repeat(60));
 
 
-  await testHaiku();
-  await testSonnet();
-  await testOpus();
+  //await testHaiku();
+  //await testSonnet();
+  //await testOpus();
   await testCompare();
 
 }
