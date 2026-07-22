@@ -4,20 +4,14 @@
  * Tests for the analyzeFraudRisk() deliverable.
  */
 
-import Anthropic from "@anthropic-ai/sdk";
-import { TRANSACTIONS } from "./sample-transactions.js";
-import { analyzeFraudRisk, analyzeFraudRiskWithoutThinking, FraudAnalysis } from "./fraud-analyzer.js";
-import { Model } from "@anthropic-ai/sdk/resources";
+import {TRANSACTIONS} from "./sample-transactions.js";
+import {analyzeFraudRisk, analyzeFraudRiskWithoutThinking} from "./fraud-analyzer.js";
 import dotenv from "dotenv";
 dotenv.config();
 
-const client = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY,
-});
-
 const model = process.env.ANTHROPIC_MODEL;
 if (!model) {
-  throw new Error("ANTHROPIC_MODEL is not set");
+    throw new Error("ANTHROPIC_MODEL is not set");
 }
 
 // -----------------------------------------------------------------------------
@@ -25,23 +19,23 @@ if (!model) {
 // -----------------------------------------------------------------------------
 
 async function testWithThinking() {
-  console.log("\n--- STEP 2: Analysis WITH Extended Thinking ---\n");
+    console.log("\n--- STEP 2: Analysis WITH Extended Thinking ---\n");
 
-  const t = TRANSACTIONS.ambiguous_case;
+    const t = TRANSACTIONS.ambiguous_case;
 
-  const result = await analyzeFraudRisk(t);
+    const result = await analyzeFraudRisk(t);
 
-  console.log("📊 Analysis:");
-  console.log(result.analysis);
+    console.log("📊 Analysis:");
+    console.log(result.analysis);
 
-  console.log(`💭 Thinking steps captured:`);
+    console.log(`💭 Thinking steps captured:`);
 
     if (result.thinkingSteps.length > 0) {
         console.log("\n📋 First thinking step (preview):");
         console.log(result.thinkingSteps[0]);
     }
 
-  console.log("\n✅ Extended thinking provides audit trail for compliance!");
+    console.log("\n✅ Extended thinking provides audit trail for compliance!");
 }
 
 async function testWithoutThinking() {
@@ -62,14 +56,14 @@ async function testWithoutThinking() {
 // -----------------------------------------------------------------------------
 
 async function main() {
-  console.log("=".repeat(60));
-  console.log("  EXERCISE: Extended Thinking for Fraud Detection");
-  console.log("  Focus: Capturing reasoning trails for compliance");
-  console.log("=".repeat(60));
+    console.log("=".repeat(60));
+    console.log("  EXERCISE: Extended Thinking for Fraud Detection");
+    console.log("  Focus: Capturing reasoning trails for compliance");
+    console.log("=".repeat(60));
 
-  // Optional: implement a test without thinking for comparison
-  await testWithoutThinking()
-  await testWithThinking();
+    // Optional: implement a test without thinking for comparison
+    await testWithoutThinking()
+    await testWithThinking();
 }
 
 main().catch(console.error);
