@@ -6,7 +6,7 @@
 
 import Anthropic from "@anthropic-ai/sdk";
 import { TRANSACTIONS } from "./sample-transactions.js";
-import { analyzeFraudRisk, FraudAnalysis } from "./fraud-analyzer.js";
+import { analyzeFraudRisk, analyzeFraudRiskWithoutThinking, FraudAnalysis } from "./fraud-analyzer.js";
 import { Model } from "@anthropic-ai/sdk/resources";
 import dotenv from "dotenv";
 dotenv.config();
@@ -36,9 +36,25 @@ async function testWithThinking() {
 
   console.log(`💭 Thinking steps captured:`);
 
-  // TODO: show thinking steps for full audit trail
+    if (result.thinkingSteps.length > 0) {
+        console.log("\n📋 First thinking step (preview):");
+        console.log(result.thinkingSteps[0]);
+    }
 
   console.log("\n✅ Extended thinking provides audit trail for compliance!");
+}
+
+async function testWithoutThinking() {
+
+    console.log("\n--- STEP 2: Analysis Without Extended Thinking ---\n");
+
+    const t = TRANSACTIONS.ambiguous_case;
+
+    const result = await analyzeFraudRiskWithoutThinking(t);
+
+    console.log("📊 Analysis:", result.analysis);
+
+
 }
 
 // -----------------------------------------------------------------------------
@@ -52,8 +68,7 @@ async function main() {
   console.log("=".repeat(60));
 
   // Optional: implement a test without thinking for comparison
-  // TODO: Test without thinking
-  // await testWithoutThinking()
+  await testWithoutThinking()
   await testWithThinking();
 }
 
