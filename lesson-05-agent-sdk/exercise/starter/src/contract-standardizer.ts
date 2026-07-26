@@ -14,7 +14,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const model = process.env.ANTHROPIC_MODEL;
 if (!model) {
-  throw new Error("ANTHROPIC_MODEL is not set");
+    throw new Error("ANTHROPIC_MODEL is not set");
 }
 
 // -----------------------------------------------------------------------------
@@ -22,9 +22,9 @@ if (!model) {
 // -----------------------------------------------------------------------------
 
 export interface StandardizedContract {
-  inputPath: string;
-  outputPath: string;
-  raw: string;
+    inputPath: string;
+    outputPath: string;
+    raw: string;
 }
 
 // Output folder for standardized contracts
@@ -86,18 +86,38 @@ INSTRUCTIONS:
 // -----------------------------------------------------------------------------
 
 export async function standardizeContract(
-  inputPath: string,
-  outputFilename: string
+    inputPath: string,
+    outputFilename: string
 ): Promise<StandardizedContract> {
-  const outputPath = path.join(STANDARDIZED_FOLDER, outputFilename);
+    const outputPath = path.join(STANDARDIZED_FOLDER, outputFilename);
 
-  // TODO: Implement the function
+    try {
+        const result = query({
+            prompt: contractStandardizerPrompt(inputPath, outputPath),
+            options: {model, allowedTools: ["Read", "Write"]},
+        });
 
-  return {
-    inputPath,
-    outputPath,
-    raw: '' // TODO: Return raw result
-  };
+        let rawResult = "";
 
-  // TODO: Catch any errors and re-throw with message: "Failed to standardize contract: {original message}"
+        for await (const message of result) {
+            if (message.type !== "result") continue;
+            if (message.subtype === "success") {
+                rawResult = message.result;
+                break;
+            }
+            throw new Error(`Agent SDK error: ${(message.errors || []).join('\n')}`);
+        }
+
+        return {
+            inputPath: inputPath,
+            outputPath: outputPath,
+            raw: rawResult
+        };
+
+    } catch (error) {
+        if (error instanceof Error) {
+            throw new Error(`Failed to standardize contract: ${error.message}`);
+        }
+        throw new Error("Failed to standardize contract: Unknown error");
+    }
 }

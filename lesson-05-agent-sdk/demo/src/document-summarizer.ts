@@ -65,6 +65,7 @@ export async function summarizeDocument(filePath: string): Promise<DocumentSumma
     let rawResult = "";
 
     for await (const message of result) {
+        console.log("\n\nMessage: ", message);
       if (message.type !== "result") continue;
       if (message.subtype === "success") {
         rawResult = message.result;
