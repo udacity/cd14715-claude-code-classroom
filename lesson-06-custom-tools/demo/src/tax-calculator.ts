@@ -212,7 +212,7 @@ export const taxToolServer = createSdkMcpServer({
 
     tool(
       "calculate_tip",
-      "Calculates tip amount and total including tip. Returns subtotal, tip amount, total, and tip percentage. Handles decimal precision correctly for financial calculations.",
+      `Calculates tip amount and total including tip. Returns subtotal, tip amount, total, and tip percentage. Handles decimal precision correctly for financial calculations.`,
       calculateTipSchema,
       async (args): Promise<{ content: Array<{ type: "text"; text: string }> }> => {
         const { amount, tipPercentage, roundToNearestCent = true } = args;
