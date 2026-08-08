@@ -6,13 +6,13 @@
  */
 
 import "dotenv/config";
-import { z } from "zod";
-import { zodToJsonSchema } from "zod-to-json-schema";
-import { query } from "@anthropic-ai/claude-agent-sdk";
+import {z} from "zod";
+import {zodToJsonSchema} from "zod-to-json-schema";
+import {query} from "@anthropic-ai/claude-agent-sdk";
 
 const model = process.env.ANTHROPIC_MODEL;
 if (!model) {
-  throw new Error("ANTHROPIC_MODEL is not set");
+    throw new Error("ANTHROPIC_MODEL is not set");
 }
 
 // -----------------------------------------------------------------------------
@@ -20,44 +20,41 @@ if (!model) {
 // -----------------------------------------------------------------------------
 
 export const ProductReviewSchema = z.object({
-  sentiment: z
-    .enum(["positive", "negative", "neutral"])
-    .describe("Overall sentiment of the review"),
+    sentiment: z
+        .enum(["positive", "negative", "neutral"])
+        .describe("Overall sentiment of the review"),
 
-  rating: z
-    .number()
-    .min(1)
-    .max(5)
-    .describe("Numerical rating from 1-5 stars"),
+    rating: z
+        .number()
+        .min(1)
+        .max(5)
+        .describe("Numerical rating from 1-5 stars"),
 
-  keyPoints: z
-    .array(z.string())
-    .min(1)
-    .max(5)
-    .describe("Main points mentioned in review"),
+    keyPoints: z
+        .array(z.string())
+        .min(1)
+        .max(5)
+        .describe("Main points mentioned in review"),
 
-  summary: z.string().max(200).describe("Brief summary of the review"),
+    summary: z.string().max(200).describe("Brief summary of the review"),
 
-  recommendsPurchase: z
-    .boolean()
-    .describe("Whether reviewer recommends buying the product"),
+    recommendsPurchase: z
+        .boolean()
+        .describe("Whether reviewer recommends buying the product"),
 });
 
 export type ProductReview = z.infer<typeof ProductReviewSchema>;
 
 // Convert to JSON Schema for API use
 export const ProductReviewJSONSchema = zodToJsonSchema(ProductReviewSchema, {
-  $refStrategy: "root",
+    $refStrategy: "root",
 });
 
 // -----------------------------------------------------------------------------
 // Main Function
 // -----------------------------------------------------------------------------
 
-export async function analyzeProductReview(
-  reviewText: string
-): Promise<ProductReview> {
-  const prompt = `Analyze the following product review and extract structured information.
+const createPrompt = (reviewText: string) => `Analyze the following product review and extract structured information.
 
 Review:
 "${reviewText}"
@@ -67,32 +64,62 @@ Extract:
 - rating: What rating (1-5 stars) does this review suggest?
 - keyPoints: What are the main points (pros/cons) mentioned?
 - summary: A brief 1-2 sentence summary
-- recommendsPurchase: Would the reviewer recommend buying?`;
+- recommendsPurchase: Would the reviewer recommend buying?
+`
 
-  try {
-    for await (const message of query({
-      prompt,
-      options: {
-        model,
-        // use JSON Schema for structured output
-        outputFormat: {
-          type: "json_schema",
-          schema: ProductReviewJSONSchema,
-        },
-      },
-    })) {
-      if (message.type === 'result') {
-        if (message.subtype === 'success' && message.structured_output) {
-          // Use the validated output
-          console.log(message.structured_output)
-          return ProductReviewSchema.parse(message.structured_output);
-        } else if (message.subtype === 'error_max_structured_output_retries') {
-          // Handle the failure - retry with simpler prompt, fall back to unstructured, etc.
-          console.error('Could not produce valid output')
+export async function analyzeProductReviewWithStructuredOutput(
+    reviewText: string
+): Promise<ProductReview> {
+    const prompt = createPrompt(reviewText);
+
+    try {
+        for await (const message of query({
+            prompt,
+            options: {
+                model,
+                // use JSON Schema for structured output
+                outputFormat: {
+                    type: "json_schema",
+                    schema: ProductReviewJSONSchema,
+                },
+            },
+        })) {
+            if (message.type === 'result') {
+                if (message.subtype === 'success' && message.structured_output) {
+                    // Use the validated output
+                    console.log("Structured Result", message.structured_output)
+                    return ProductReviewSchema.parse(message.structured_output);
+                } else if (message.subtype === 'error_max_structured_output_retries') {
+                    // Handle the failure - retry with simpler createPrompt, fall back to unstructured, etc.
+                    console.error('Could not produce valid output')
+                }
+            }
         }
-      }
+    } catch (error) {
+        throw new Error("Failed to get structured output from agent");
     }
-  } catch (error) {
-    throw new Error("Failed to get structured output from agent");
-  }
+}
+
+export async function analyzeProductReviewWithTextOutput(
+    reviewText: string
+): Promise<string> {
+    const prompt = createPrompt(reviewText);
+    try {
+        for await (const message of query({
+            prompt,
+            options: {model},
+        })) {
+            if (message.type !== 'result') continue
+            if (message.type === 'result') {
+                if (message.subtype === 'success') {
+                    // Use the validated output
+                    return message.result;
+                }
+            }
+        }
+    } catch (error) {
+        throw new Error(`Agent SDK error: ${(message.errors || []).join('\n')}`);
+    }
+    console.error(`Could not get output from the agent`);
+    throw new Error(`Could not get output from the agent`);
 }

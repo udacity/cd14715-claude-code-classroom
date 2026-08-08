@@ -6,10 +6,10 @@
 
 import "dotenv/config";
 import {
-  analyzeProductReview,
-  ProductReviewSchema,
-  ProductReviewJSONSchema,
-  ProductReview,
+    analyzeProductReviewWithStructuredOutput,
+    ProductReviewSchema,
+    ProductReviewJSONSchema,
+    ProductReview, analyzeProductReviewWithTextOutput,
 } from "./product-review-analyzer.js";
 import { sampleReviews } from "./sample-reviews.js";
 
@@ -17,20 +17,29 @@ import { sampleReviews } from "./sample-reviews.js";
 // Test case: Analyze a positive review
 // -----------------------------------------------------------------------------
 
-async function analyzePositiveReview() {
+async function analyzeReviewByExpectedSentiment(sentiment: string) {
 
-  const review = sampleReviews.find(r => r.expectedSentiment === "positive");
-  if (!review) {
-    throw new Error("No positive review found");
-  }
+    const review = sampleReviews.find(r => r.expectedSentiment === sentiment);
+    if (!review) {
+        throw new Error("No positive review found");
+    }
 
-  const result = await analyzeProductReview(review.text);
-  console.log("Structured Output:");
-  console.log(`  Sentiment: ${result.sentiment}`);
-  console.log(`  Rating: ${result.rating}/5`);
-  console.log(`  Key Points: ${result.keyPoints.join(", ")}`);
-  console.log(`  Summary: ${result.summary}`);
-  console.log(`  Recommends: ${result.recommendsPurchase}`);
+    let result = await analyzeProductReviewWithStructuredOutput(review.text);
+
+    console.log("=".repeat(60))
+    console.log("Structured Output:");
+    console.log("=".repeat(60))
+    console.log(`  Sentiment: ${result.sentiment}`);
+    console.log(`  Rating: ${result.rating}/5`);
+    console.log(`  Key Points: ${result.keyPoints.join(", ")}`);
+    console.log(`  Summary: ${result.summary}`);
+    console.log(`  Recommends: ${result.recommendsPurchase}`);
+
+    console.log("=".repeat(60))
+    console.log("Text Output:");
+    console.log("=".repeat(60))
+    result = await analyzeProductReviewWithTextOutput(review.text);
+    console.log(`  Text Result: ${result}`);
 }
 
 // -----------------------------------------------------------------------------
@@ -74,7 +83,7 @@ async function main() {
   console.log("  Using Zod schemas for reliable data extraction");
   console.log("=".repeat(60));
 
-  await analyzePositiveReview();
+  Array.of("positive", "negative", "neutral").forEach(async (s) => await analyzeReviewByExpectedSentiment(s))
   typeSafety();
 }
 
