@@ -1,4 +1,5 @@
 ---
+name : "Email Etiquette Skill"
 description: "Professional email communication expert providing guidance on tone, structure, clarity, and etiquette for business emails"
 ---
 
