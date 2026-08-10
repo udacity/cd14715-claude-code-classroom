@@ -16,12 +16,12 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 // Test case: Review file with issues
 // -----------------------------------------------------------------------------
 
-async function reviewCodeWithIssues() {
+async function reviewCodeForFile(fileName: string, folderName: string = "sample-code") {
   console.log("\n" + "=".repeat(60));
   console.log("Test: Review File with Issues");
   console.log("=".repeat(60));
 
-  const filePath = path.join(__dirname, "sample-code", "issues.js");
+  const filePath = path.join(__dirname, folderName, fileName);
   console.log(`\nReviewing: ${filePath}\n`);
 
   const result = await reviewJavaScriptFile(filePath);
@@ -51,16 +51,22 @@ async function reviewCodeWithIssues() {
 // -----------------------------------------------------------------------------
 
 async function main() {
-  console.log("=".repeat(60));
   console.log("  EXERCISE: Claude Skills - JavaScript Code Reviewer");
   console.log("  Combines Skills (L08) + Structured Outputs (L07)");
-  console.log("=".repeat(60));
 
-  await reviewCodeWithIssues();
+  for (const fileName of ["issues.js", "clean.js"]) {
+    console.log("=".repeat(60));
+    console.log("  Reviewing file: " + fileName);
+    console.log("=".repeat(60));
 
-  console.log("\n" + "=".repeat(60));
+    await reviewCodeForFile(fileName);
+
+    console.log("\n" + "=".repeat(60));
+  }
+
   console.log("Exercise complete!");
   console.log("=".repeat(60));
+
 }
 
 main().catch(console.error);
