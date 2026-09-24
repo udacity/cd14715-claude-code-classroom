@@ -1,82 +1,41 @@
 ---
-description: "TODO: Add a brief description of this support ticket system"
+description: "Intelligent support ticket routing system for analyzing, classifying, and routing 5,000+ customer support tickets daily"
 tools:
-  # TODO: List the tools Claude should have access to (bash, read, grep, glob)
-  - TODO
+  - bash
+  - read
+  - grep
+  - glob
 ---
 
 # Support Ticket System
 
-<!-- TODO: Write project overview explaining what this system does -->
-
 ## Project Overview
 
-TODO: Describe the intelligent support ticket routing system. Include:
-- What it does (analyzes and routes 5,000+ tickets daily)
-- Main features (classification, routing, SLA monitoring)
-- Target users (support teams, customers)
+This intelligent support ticket routing system analyzes and routes more than 5,000 customer support tickets daily.
+
+Main features include:
+
+- **Classification**: Determines ticket urgency and category.
+- **Routing**: Sends tickets to the appropriate support team.
+- **SLA monitoring**: Tracks response-time requirements based on customer tier and ticket urgency.
+
+The system is designed for support teams that need consistent and efficient ticket triage and for customers who need their issues handled by the appropriate team within the required SLA.
 
 ## Architecture
 
-<!-- TODO: Document your architecture -->
-
 This system uses:
-- **TODO**: Describe your subagent(s)
-- **TODO**: Describe your skill(s)
+
+- **Ticket Analyzer Subagent**: A specialized subagent that analyzes individual support tickets, determines urgency and category, and recommends the appropriate routing team. It uses a restricted set of tools and the Haiku model for fast ticket analysis.
+- **Ticket Classification Skill**: A domain-specific skill that provides the rules, urgency matrix, keywords, category definitions, routing rules, and examples needed to classify support tickets consistently.
 
 ## How to Use
 
-<!-- TODO: Add usage examples -->
-
 ```bash
-# TODO: Add example command to analyze a single ticket
-claude "TODO"
+# Analyze a single ticket
+claude "Analyze the ticket in sample-tickets/technical.txt"
 
-# TODO: Add example command to classify all tickets
-claude "TODO"
+# Classify all tickets
+claude "Classify all tickets in sample-tickets/ and route appropriately"
 
-# TODO: Add example command to check SLA status
-claude "TODO"
-```
-
-## Ticket Categories
-
-<!-- TODO: List the three main categories -->
-
-- **TODO**: Description
-- **TODO**: Description
-- **TODO**: Description
-
-## SLA Requirements
-
-<!-- TODO: Document SLA requirements -->
-
-- **Enterprise customers**: TODO
-- **Standard customers**: TODO
-
-## System Instructions
-
-<!-- TODO: Add instructions for how Claude should handle tickets -->
-
-When analyzing support tickets:
-
-1. TODO: First step
-2. TODO: Second step
-3. TODO: Third step
-
-## Build Commands
-
-```bash
-# TODO: If this were a real project, add relevant commands
-npm install
-npm test
-```
-
-## Key Takeaway
-
-<!-- TODO: Write what this configuration demonstrates -->
-
-This configuration shows how to:
-- TODO: First learning point
-- TODO: Second learning point
-- TODO: Third learning point
+# Check SLA status
+claude "Check the SLA status for all tickets in sample-tickets/"
