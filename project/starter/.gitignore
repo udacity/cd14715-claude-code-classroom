@@ -10,3 +10,15 @@ coverage/
 *.tsbuildinfo
 .temp/
 reports/
+
+# Include required course review reports
+!reports/
+!reports/airaamane-simple-todo-app-pr-1.md
+!reports/airaamane-simple-todo-app-pr-1.html
+!reports/airaamane-simple-todo-app-pr-1.json
+!reports/airaamane-simple-todo-app-pr-2.md
+!reports/airaamane-simple-todo-app-pr-2.html
+!reports/airaamane-simple-todo-app-pr-2.json
+!reports/airaamane-simple-todo-app-pr-3.md
+!reports/airaamane-simple-todo-app-pr-3.html
+!reports/airaamane-simple-todo-app-pr-3.json

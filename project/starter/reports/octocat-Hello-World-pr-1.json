@@ -1,0 +1,438 @@
+{
+  "pullRequest": {
+    "owner": "octocat",
+    "repo": "Hello-World",
+    "number": 1
+  },
+  "fileReviews": [
+    {
+      "file": "src/orchestrator.ts",
+      "codeQuality": {
+        "file": "src/orchestrator.ts",
+        "issues": [
+          {
+            "line": 41,
+            "severity": "medium",
+            "category": "bug-risk",
+            "description": "The rateLimiter.acquire() call can potentially fail or throw an error, but there's no specific error handling around it. If the rate limiter throws an error before the try block starts handling the query, the finally block will still release, but the error context might be lost.",
+            "suggestion": "Consider wrapping the acquire call in the try block or adding explicit error handling: try { await rateLimiter.acquire(estimatedTokens); ... } to ensure proper cleanup on acquisition failure."
+          },
+          {
+            "line": 82,
+            "severity": "low",
+            "category": "bug-risk",
+            "description": "The code uses this.requestHistory[this.requestHistory.length - 1] which could potentially be undefined if the array is empty, though TypeScript's noUncheckedIndexedAccess flag should catch this.",
+            "suggestion": "While the TypeScript configuration helps, consider adding an explicit check or using optional chaining for defensive programming."
+          },
+          {
+            "line": 76,
+            "severity": "medium",
+            "category": "bug-risk",
+            "description": "The async generator response is only partially consumed. If there are multiple 'result' messages with 'structured_output', only the last one will be used. If there are errors or other messages in the stream, they might be ignored.",
+            "suggestion": "Consider logging or handling other message types in the stream. Add logic to handle error messages: if (message.type === 'error') { throw new Error(message.error); }"
+          },
+          {
+            "line": 39,
+            "severity": "low",
+            "category": "maintainability",
+            "description": "The default value 1000 for estimated tokens is hardcoded without explanation. This makes it difficult to understand the rationale and could lead to inconsistent behavior.",
+            "suggestion": "Extract to a named constant: const DEFAULT_ESTIMATED_TOKENS = 1000; // Baseline estimate for a standard PR review at the module level."
+          },
+          {
+            "line": 54,
+            "severity": "medium",
+            "category": "bug-risk",
+            "description": "The query() call has no timeout mechanism. Long-running reviews could hang indefinitely, consuming resources and blocking the rate limiter.",
+            "suggestion": "Wrap the query operation with the withTimeout utility from error-handler: await withTimeout(() => query(...), 300000, 'Review timeout') or add a timeout option to the query call."
+          },
+          {
+            "line": 109,
+            "severity": "medium",
+            "category": "performance",
+            "description": "The release() method is called without the actual token count used by the query. This means the rate limiter's token tracking will be inaccurate, using only the estimated value.",
+            "suggestion": "Extract actual token usage from the response stream and pass it to release(): rateLimiter.release(actualTokensUsed). You may need to capture this from response messages."
+          },
+          {
+            "line": 77,
+            "severity": "low",
+            "category": "bug-risk",
+            "description": "The code checks for message.type === 'result' and 'structured_output' in message but doesn't validate the structure of the message object itself.",
+            "suggestion": "Add type guards or runtime validation for message structure before accessing properties."
+          }
+        ],
+        "overallScore": 78,
+        "summary": "The orchestrator implementation is generally well-structured with good error handling foundations (try-finally for rate limiter cleanup, Zod validation). However, there are several areas that need improvement around error handling completeness, response stream handling, and rate limiter token tracking accuracy. The code follows TypeScript best practices with strict mode enabled. Main concerns are around robustness in edge cases and observability of the query execution."
+      },
+      "testCoverage": {
+        "file": "src/orchestrator.ts",
+        "hasTests": true,
+        "testFiles": [
+          "tests/orchestrator.test.ts"
+        ],
+        "untestedPaths": [
+          {
+            "type": "edge-case",
+            "location": "Line 38-41 (globalRateLimiter fallback)",
+            "priority": "medium",
+            "reasoning": "The code defaults to globalRateLimiter when no rate limiter is provided in options. This default behavior should be tested to ensure it works correctly.",
+            "suggestedTest": "Add a test that creates an orchestrator without a custom rate limiter and verifies that globalRateLimiter.acquire is called."
+          },
+          {
+            "type": "branch",
+            "location": "Line 85-89 (missing structured output)",
+            "priority": "high",
+            "reasoning": "The error condition when structuredOutput is undefined after iteration is critical for detecting malformed SDK responses.",
+            "suggestedTest": "Mock the query response to yield messages without structured_output and verify the error is thrown with the correct message."
+          },
+          {
+            "type": "edge-case",
+            "location": "Line 108-110 (finally block with rate limiter release on error)",
+            "priority": "high",
+            "reasoning": "The finally block ensures rate limiter release even when errors occur. This is crucial for preventing resource leaks.",
+            "suggestedTest": "Add a test that mocks query to throw an error and verifies that rateLimiter.release() is still called."
+          },
+          {
+            "type": "edge-case",
+            "location": "Line 39 (estimatedTokens default value)",
+            "priority": "low",
+            "reasoning": "The default value of 1000 tokens when not provided should be verified.",
+            "suggestedTest": "Test that when estimatedTokens is not provided, the rate limiter receives 1000 as the default."
+          }
+        ],
+        "coverageEstimate": 75,
+        "summary": "The orchestrator has good basic coverage but lacks tests for error paths, edge cases around rate limiting defaults, and the finally block execution."
+      },
+      "refactorings": {
+        "file": "src/orchestrator.ts",
+        "suggestions": [
+          {
+            "type": "extract-function",
+            "location": "Lines 74-89",
+            "impact": "medium",
+            "description": "The async stream processing logic is embedded in the main reviewPullRequest method, making it harder to test and reuse.",
+            "before": "let structuredOutput: unknown;\n\nfor await (const message of response) {\n  if (\n    message.type === 'result' &&\n    'structured_output' in message\n  ) {\n    structuredOutput = message.structured_output;\n  }\n}\n\nif (structuredOutput === undefined) {\n  throw new Error(\n    'Code review completed without a structured output result.'\n  );\n}",
+            "after": "private async extractStructuredOutput(response: AsyncIterable<unknown>): Promise<unknown> {\n  let structuredOutput: unknown;\n\n  for await (const message of response) {\n    if (\n      message.type === 'result' &&\n      'structured_output' in message\n    ) {\n      structuredOutput = message.structured_output;\n    }\n  }\n\n  if (structuredOutput === undefined) {\n    throw new Error(\n      'Code review completed without a structured output result.'\n    );\n  }\n\n  return structuredOutput;\n}\n\n// Usage:\nconst structuredOutput = await this.extractStructuredOutput(response);",
+            "benefits": "Improves testability by isolating stream processing logic, reduces cognitive complexity of the main method, and makes the stream processing logic reusable."
+          },
+          {
+            "type": "extract-function",
+            "location": "Lines 91-107",
+            "impact": "medium",
+            "description": "The validation and report creation logic can be extracted to improve separation of concerns.",
+            "before": "const validated = ReviewReportSchema.safeParse(structuredOutput);\n\nif (!validated.success) {\n  throw new Error(\n    `Invalid review report: ${validated.error.message}`\n  );\n}\n\nconst report = validated.data;\n\nreturn {\n  ...report,\n  metadata: {\n    ...report.metadata,\n    duration: Date.now() - startedAt,\n  },\n};",
+            "after": "private validateAndEnhanceReport(\n  structuredOutput: unknown,\n  startedAt: number\n): ReviewReport {\n  const validated = ReviewReportSchema.safeParse(structuredOutput);\n\n  if (!validated.success) {\n    throw new Error(\n      `Invalid review report: ${validated.error.message}`\n    );\n  }\n\n  const report = validated.data;\n\n  return {\n    ...report,\n    metadata: {\n      ...report.metadata,\n      duration: Date.now() - startedAt,\n    },\n  };\n}\n\n// Usage:\nreturn this.validateAndEnhanceReport(structuredOutput, startedAt);",
+            "benefits": "Improves single responsibility principle, makes validation logic testable independently, and simplifies the main method flow."
+          },
+          {
+            "type": "simplify",
+            "location": "Lines 48-66",
+            "impact": "low",
+            "description": "The agents and query configuration objects can be extracted to constants or a separate method to reduce inline complexity.",
+            "before": "const agents = {\n  'code-quality-analyzer': codeQualityAnalyzer,\n  'test-coverage-analyzer': testCoverageAnalyzer,\n  'refactoring-suggester': refactoringSuggester,\n};\n\nconst response = query({\n  prompt,\n  options: {\n    model: this.options.model,\n    cwd: this.options.cwd,\n    mcpServers: mcpServersConfig,\n    agents,\n    allowedTools: [\n      'Task',\n      'Read',\n      'Grep',\n      'Glob',\n    ],\n    outputFormat: {\n      type: 'json_schema',\n      schema: resultSchema,\n    },\n  },\n});",
+            "after": "private buildQueryOptions(prompt: string, resultSchema: unknown) {\n  const agents = {\n    'code-quality-analyzer': codeQualityAnalyzer,\n    'test-coverage-analyzer': testCoverageAnalyzer,\n    'refactoring-suggester': refactoringSuggester,\n  };\n\n  return query({\n    prompt,\n    options: {\n      model: this.options.model,\n      cwd: this.options.cwd,\n      mcpServers: mcpServersConfig,\n      agents,\n      allowedTools: ['Task', 'Read', 'Grep', 'Glob'],\n      outputFormat: {\n        type: 'json_schema',\n        schema: resultSchema,\n      },\n    },\n  });\n}\n\n// Usage:\nconst response = this.buildQueryOptions(prompt, resultSchema);",
+            "benefits": "Reduces the length of the main method, improves readability, and makes query configuration more maintainable."
+          }
+        ],
+        "summary": "The orchestrator has 3 refactoring opportunities focused on extracting methods to improve testability, separation of concerns, and code organization. The stream processing and validation logic are good candidates for extraction."
+      }
+    },
+    {
+      "file": "src/utils/index.ts",
+      "codeQuality": {
+        "file": "src/utils/index.ts",
+        "issues": [
+          {
+            "line": 5,
+            "severity": "info",
+            "category": "maintainability",
+            "description": "The TODO comment states 'Complete error handler and rate limiter implementations, then uncomment the exports below' but the exports on lines 13-21 are already uncommented and appear to be implemented.",
+            "suggestion": "Remove the TODO comment as the implementations are complete: Delete lines 5-6 and line 12."
+          },
+          {
+            "line": 9,
+            "severity": "low",
+            "category": "style",
+            "description": "The import statement uses .js extension ('./logger.js') while all other imports omit extensions. This is inconsistent and could cause confusion, especially since the source files are .ts.",
+            "suggestion": "Remove the .js extension for consistency: export { logger } from './logger';. The bundler/TypeScript will resolve the correct extension."
+          },
+          {
+            "line": 1,
+            "severity": "low",
+            "category": "maintainability",
+            "description": "The module exports utility functions but doesn't re-export important types like RateLimiterConfig, ReviewError, or ErrorCode that consumers might need.",
+            "suggestion": "Add type exports: export type { RateLimiterConfig } from './rate-limiter.js'; export type { ErrorCode } from './error-handler.js';"
+          }
+        ],
+        "overallScore": 85,
+        "summary": "This is a simple barrel export file with minimal issues. The main concerns are documentation hygiene (outdated TODO) and minor style inconsistencies. The file serves its purpose well but could be improved with better type exports for consumer convenience."
+      },
+      "testCoverage": {
+        "file": "src/utils/index.ts",
+        "hasTests": false,
+        "testFiles": [],
+        "untestedPaths": [
+          {
+            "type": "function",
+            "location": "Entire file (lines 9-21)",
+            "priority": "low",
+            "reasoning": "This is a simple export barrel file with no logic. However, it should be verified that all exports are correctly re-exported.",
+            "suggestedTest": "Create a test that imports each exported symbol and verifies it's defined and has the expected type."
+          }
+        ],
+        "coverageEstimate": 0,
+        "summary": "Export barrel file with no tests. Low priority since it contains no logic, but exports should be verified."
+      },
+      "refactorings": {
+        "file": "src/utils/index.ts",
+        "suggestions": [],
+        "summary": "No significant refactoring opportunities identified. The file is simple and serves its purpose as a barrel export."
+      }
+    },
+    {
+      "file": "tests/orchestrator.test.ts",
+      "codeQuality": {
+        "file": "tests/orchestrator.test.ts",
+        "issues": [
+          {
+            "line": 3,
+            "severity": "low",
+            "category": "maintainability",
+            "description": "The mock for @anthropic-ai/claude-agent-sdk is very basic and doesn't validate that the query function is called with the correct parameters structure. This could miss integration issues.",
+            "suggestion": "Consider adding parameter validation in the mock or creating helper functions to verify call parameters more thoroughly."
+          },
+          {
+            "line": 39,
+            "severity": "low",
+            "category": "maintainability",
+            "description": "The test uses a hardcoded timestamp string '2026-09-26T00:00:00Z' which is in the future and doesn't reflect realistic test data.",
+            "suggestion": "Use new Date().toISOString() or a date generator utility to create more realistic timestamps in tests."
+          },
+          {
+            "line": 168,
+            "severity": "medium",
+            "category": "maintainability",
+            "description": "While there's a test for invalid schema validation, there are no tests for other error scenarios like rate limiter failures, query timeouts, or network errors.",
+            "suggestion": "Add test cases for: rate limiter acquire failures, query stream errors, timeout scenarios, and missing structured output in response stream."
+          },
+          {
+            "line": 15,
+            "severity": "low",
+            "category": "maintainability",
+            "description": "The agent mocks are empty objects {}, which doesn't validate that agents are properly configured with prompts, tools, etc.",
+            "suggestion": "Create more realistic agent mocks that match the AgentDefinition structure to catch configuration issues."
+          },
+          {
+            "line": 181,
+            "severity": "info",
+            "category": "maintainability",
+            "description": "The integration test is skipped with no details about when it should be run or how to enable it.",
+            "suggestion": "Add environment variable checks and documentation: it.skipIf(!process.env.RUN_INTEGRATION_TESTS)('should review a real small PR', async () => { ... }) with a comment explaining setup requirements."
+          },
+          {
+            "line": 136,
+            "severity": "low",
+            "category": "maintainability",
+            "description": "The test validates the report structure but doesn't verify that the duration metadata is properly calculated (should be Date.now() - startedAt).",
+            "suggestion": "Add an assertion: expect(report.metadata.duration).toBeGreaterThan(0); to verify duration tracking works."
+          },
+          {
+            "line": 1,
+            "severity": "medium",
+            "category": "bug-risk",
+            "description": "There's no test verifying that the rate limiter is properly released when an error occurs during query execution.",
+            "suggestion": "Add a test case that mocks a query error and verifies rateLimiter.release() is still called in the finally block."
+          }
+        ],
+        "overallScore": 72,
+        "summary": "The test suite covers basic happy path scenarios well but lacks comprehensive error case testing. The mocks are functional but too simplistic to catch integration issues. More test coverage is needed for error conditions, edge cases, and proper cleanup in failure scenarios. The tests are well-organized and use Vitest effectively."
+      },
+      "testCoverage": {
+        "file": "tests/orchestrator.test.ts",
+        "hasTests": true,
+        "testFiles": [],
+        "untestedPaths": [
+          {
+            "type": "branch",
+            "location": "Line 181-183 (skipped integration test)",
+            "priority": "low",
+            "reasoning": "Integration test is skipped. While reasonable for CI/CD, there should be documentation or a separate integration test suite.",
+            "suggestedTest": "Create an integration test environment or document how to run integration tests manually."
+          }
+        ],
+        "coverageEstimate": 85,
+        "summary": "Good test coverage for orchestrator with appropriate mocking. Missing error paths and edge cases as noted in orchestrator.ts section."
+      },
+      "refactorings": {
+        "file": "tests/orchestrator.test.ts",
+        "suggestions": [
+          {
+            "type": "extract-function",
+            "location": "Lines 23-48",
+            "impact": "low",
+            "description": "The validReport object is defined at module level but could be a factory function for better test isolation.",
+            "before": "const validReport = {\n  pullRequest: {\n    owner: 'test-owner',\n    repo: 'test-repo',\n    number: 123,\n  },\n  fileReviews: [],\n  summary: {\n    totalFiles: 0,\n    overallScore: 0,\n    criticalIssues: 0,\n    highPriorityTests: 0,\n    refactoringOpportunities: 0,\n  },\n  recommendations: [],\n  metadata: {\n    analyzedAt: '2026-09-26T00:00:00Z',\n    duration: 0,\n    agentVersions: {\n      orchestrator: '1.0.0',\n      'code-quality-analyzer': '1.0.0',\n      'test-coverage-analyzer': '1.0.0',\n      'refactoring-suggester': '1.0.0',\n    },\n  },\n};",
+            "after": "function createValidReport(overrides = {}) {\n  return {\n    pullRequest: {\n      owner: 'test-owner',\n      repo: 'test-repo',\n      number: 123,\n    },\n    fileReviews: [],\n    summary: {\n      totalFiles: 0,\n      overallScore: 0,\n      criticalIssues: 0,\n      highPriorityTests: 0,\n      refactoringOpportunities: 0,\n    },\n    recommendations: [],\n    metadata: {\n      analyzedAt: '2026-09-26T00:00:00Z',\n      duration: 0,\n      agentVersions: {\n        orchestrator: '1.0.0',\n        'code-quality-analyzer': '1.0.0',\n        'test-coverage-analyzer': '1.0.0',\n        'refactoring-suggester': '1.0.0',\n      },\n    },\n    ...overrides,\n  };\n}",
+            "benefits": "Improves test isolation by creating fresh objects, allows easy customization of test data, and follows the test data builder pattern."
+          },
+          {
+            "type": "extract-function",
+            "location": "Lines 50-55",
+            "impact": "low",
+            "description": "The resultStream generator is simple but could be named more descriptively or enhanced.",
+            "before": "async function* resultStream(structuredOutput: unknown) {\n  yield {\n    type: 'result',\n    structured_output: structuredOutput,\n  };\n}",
+            "after": "async function* createMockQueryStream(structuredOutput: unknown) {\n  yield {\n    type: 'result',\n    structured_output: structuredOutput,\n  } as const;\n}",
+            "benefits": "More descriptive name clarifies intent, adding 'as const' improves type safety."
+          }
+        ],
+        "summary": "The test file has 2 minor refactoring opportunities focused on improving test data management and naming conventions for better maintainability."
+      }
+    },
+    {
+      "file": "tests/schemas.test.ts",
+      "codeQuality": {
+        "file": "tests/schemas.test.ts",
+        "issues": [
+          {
+            "line": 1,
+            "severity": "low",
+            "category": "maintainability",
+            "description": "The test file imports schemas but doesn't verify that TypeScript types are correctly inferred from the schemas.",
+            "suggestion": "Add type assertions to verify type inference: type TestType = TestCoverageResult; const test: TestType = {...}; to ensure types match runtime validation."
+          },
+          {
+            "line": 73,
+            "severity": "medium",
+            "category": "maintainability",
+            "description": "Only two negative test cases are present (invalid severity and invalid scores). Other schema constraints like missing required fields, invalid enums in other fields, or malformed data are not tested.",
+            "suggestion": "Add tests for: missing required fields, empty arrays where items are expected, invalid enum values for all enum fields (category, type, priority, impact), and type mismatches (string instead of number)."
+          },
+          {
+            "line": 155,
+            "severity": "medium",
+            "category": "maintainability",
+            "description": "While the test verifies JSON schemas exist and are objects, it doesn't validate that they have the correct structure (required properties like $schema, type, properties, etc.) needed by the SDK.",
+            "suggestion": "Add detailed schema structure validation: expect(CodeQualityResultJSONSchema).toHaveProperty('type', 'object'); expect(CodeQualityResultJSONSchema).toHaveProperty('properties'); and verify key properties are present."
+          },
+          {
+            "line": 14,
+            "severity": "low",
+            "category": "maintainability",
+            "description": "Test data objects are created inline for each test, leading to duplication and making maintenance harder if schemas change.",
+            "suggestion": "Extract valid test data objects to constants at the module level: const VALID_CODE_QUALITY_RESULT = {...} and reuse them across tests."
+          },
+          {
+            "line": 1,
+            "severity": "medium",
+            "category": "maintainability",
+            "description": "No tests for edge cases like empty issue arrays, maximum length strings, or special characters in text fields.",
+            "suggestion": "Add tests for: empty issues/suggestions arrays, very long description strings, special characters in file paths, and boundary values (score = 0, score = 100)."
+          },
+          {
+            "line": 1,
+            "severity": "low",
+            "category": "maintainability",
+            "description": "Tests don't verify that array fields properly reject invalid array items or enforce array type constraints.",
+            "suggestion": "Add tests that include malformed items in arrays: issues: [null, {...}] or testFiles: [123, 'valid.ts'] to ensure array item validation works."
+          }
+        ],
+        "overallScore": 75,
+        "summary": "The schema tests provide good basic validation coverage for the happy path and some negative cases. However, they lack comprehensive edge case testing, negative test coverage, and validation of the JSON Schema structure that will be consumed by the SDK. The tests are well-organized but could benefit from better test data management and more thorough validation of schema constraints."
+      },
+      "testCoverage": {
+        "file": "tests/schemas.test.ts",
+        "hasTests": true,
+        "testFiles": [],
+        "untestedPaths": [
+          {
+            "type": "edge-case",
+            "location": "Missing tests for ReviewReportSchema",
+            "priority": "medium",
+            "reasoning": "The test file only covers analysis-results schemas but not the ReviewReportSchema from report-types.ts.",
+            "suggestedTest": "Add tests for ReviewReportSchema validation including: (a) valid report, (b) invalid pullRequest data, (c) invalid summary, (d) invalid recommendations, (e) invalid metadata."
+          },
+          {
+            "type": "edge-case",
+            "location": "Missing tests for array edge cases",
+            "priority": "low",
+            "reasoning": "Tests don't verify behavior with empty arrays, which are valid per the schemas.",
+            "suggestedTest": "Test schemas with: (a) empty issues array, (b) empty untestedPaths array, (c) empty suggestions array."
+          },
+          {
+            "type": "edge-case",
+            "location": "Missing tests for optional fields",
+            "priority": "low",
+            "reasoning": "Tests don't verify which fields are optional vs required.",
+            "suggestedTest": "Test schemas with: (a) missing optional fields, (b) missing required fields to verify validation fails."
+          }
+        ],
+        "coverageEstimate": 70,
+        "summary": "Good schema validation tests but incomplete coverage of all schema types defined in the codebase."
+      },
+      "refactorings": {
+        "file": "tests/schemas.test.ts",
+        "suggestions": [],
+        "summary": "No significant refactoring opportunities identified. The test file is well-structured but needs additional test cases for comprehensive coverage."
+      }
+    }
+  ],
+  "summary": {
+    "totalFiles": 4,
+    "overallScore": 77.5,
+    "criticalIssues": 0,
+    "highPriorityTests": 2,
+    "refactoringOpportunities": 5
+  },
+  "recommendations": [
+    {
+      "priority": "high",
+      "category": "Testing",
+      "description": "Add comprehensive error handling tests for the orchestrator, especially for rate limiter failures and query stream errors. Ensure the finally block properly releases rate limiter resources on errors.",
+      "files": [
+        "tests/orchestrator.test.ts",
+        "src/orchestrator.ts"
+      ]
+    },
+    {
+      "priority": "high",
+      "category": "Bug Prevention",
+      "description": "Implement timeout protection for the query operation to prevent hanging requests. Use the withTimeout utility from error-handler or add a timeout option to the query call.",
+      "files": [
+        "src/orchestrator.ts"
+      ]
+    },
+    {
+      "priority": "medium",
+      "category": "Performance",
+      "description": "Improve rate limiter token tracking by passing actual token counts to the release method instead of relying solely on estimates. Extract token usage from response stream.",
+      "files": [
+        "src/orchestrator.ts"
+      ]
+    },
+    {
+      "priority": "medium",
+      "category": "Testing",
+      "description": "Expand test coverage for schema validation to include more negative cases and edge cases. Add tests for ReviewReportSchema, empty arrays, and optional field validation.",
+      "files": [
+        "tests/schemas.test.ts"
+      ]
+    },
+    {
+      "priority": "low",
+      "category": "Code Quality",
+      "description": "Clean up documentation by removing outdated TODO comments and fixing style inconsistencies in imports (remove .js extensions for consistency).",
+      "files": [
+        "src/utils/index.ts"
+      ]
+    }
+  ],
+  "metadata": {
+    "analyzedAt": "2026-09-26T00:00:00.000Z",
+    "duration": 297683,
+    "agentVersions": {
+      "orchestrator": "1.0.0",
+      "code-quality-analyzer": "a16c199",
+      "test-coverage-analyzer": "afd5fca",
+      "refactoring-suggester": "a79a241"
+    }
+  }
+}

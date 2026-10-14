@@ -1,0 +1,33 @@
+{
+  "pullRequest": {
+    "owner": "airaamane",
+    "repo": "simple-todo-app",
+    "number": 1
+  },
+  "fileReviews": [],
+  "summary": {
+    "totalFiles": 0,
+    "overallScore": 0,
+    "criticalIssues": 0,
+    "highPriorityTests": 0,
+    "refactoringOpportunities": 0
+  },
+  "recommendations": [
+    {
+      "priority": "critical",
+      "category": "Access Required",
+      "description": "Unable to access pull request #1 from airaamane/simple-todo-app. Permission is required to use GitHub CLI commands or GitHub MCP tools to fetch PR details, changed files, and diffs. Please grant the necessary permissions to enable comprehensive code review.",
+      "files": []
+    }
+  ],
+  "metadata": {
+    "analyzedAt": "2026-09-26T00:00:00Z",
+    "duration": 344281,
+    "agentVersions": {
+      "orchestrator": "1.0.0",
+      "code-quality-analyzer": "not-executed",
+      "test-coverage-analyzer": "not-executed",
+      "refactoring-suggester": "not-executed"
+    }
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "pullRequest": {
+    "owner": "airaamane",
+    "repo": "simple-todo-app",
+    "number": 2
+  },
+  "fileReviews": [],
+  "summary": {
+    "totalFiles": 0,
+    "overallScore": 0,
+    "criticalIssues": 0,
+    "highPriorityTests": 0,
+    "refactoringOpportunities": 0
+  },
+  "recommendations": [],
+  "metadata": {
+    "analyzedAt": "2026-09-26T00:00:00Z",
+    "duration": 288937,
+    "agentVersions": {
+      "orchestrator": "1.0.0",
+      "code-quality-analyzer": "unavailable",
+      "test-coverage-analyzer": "unavailable",
+      "refactoring-suggester": "unavailable"
+    }
+  }
+}
