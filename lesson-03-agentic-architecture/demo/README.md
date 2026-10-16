@@ -24,11 +24,18 @@ demo/
     └── workflow.svg          # Workflow diagram (rendered)
 ```
 
-> **Diagrams:** `ARCHITECTURE.md` displays pre-rendered SVG images from the `diagrams/` folder. To modify a diagram, edit the corresponding `.mmd` source file and re-render with:
+> **Diagrams:** `ARCHITECTURE.md` displays pre-rendered SVG images from the `diagrams/` folder. To modify a diagram, edit the corresponding `.mmd` source file and re-render with `mmdc`.
+>
+> **Rendering Diagrams:**
+> The `@mermaid-js/mermaid-cli` package is installed at the project root. From the project root directory, run:
 > ```bash
-> mmdc -i diagrams/<name>.mmd -o diagrams/<name>.svg
+> npx mmdc -i lesson-03-agentic-architecture/demo/diagrams/<name>.mmd -o lesson-03-agentic-architecture/demo/diagrams/<name>.svg
 > ```
-> `mmdc` is available in the Vocareum workspace. For local use: `npm install -g @mermaid-js/mermaid-cli`
+>
+> Example - render the single-agent diagram:
+> ```bash
+> npx mmdc -i lesson-03-agentic-architecture/demo/diagrams/single-agent.mmd -o lesson-03-agentic-architecture/demo/diagrams/single-agent.svg
+> ```
 
 ## What You'll See
 

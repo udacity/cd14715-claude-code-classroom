@@ -1,0 +1,33 @@
+{
+  "pullRequest": {
+    "owner": "airaamane",
+    "repo": "simple-todo-app",
+    "number": 2
+  },
+  "fileReviews": [],
+  "summary": {
+    "totalFiles": 0,
+    "overallScore": 0,
+    "criticalIssues": 0,
+    "highPriorityTests": 0,
+    "refactoringOpportunities": 0
+  },
+  "recommendations": [
+    {
+      "priority": "critical",
+      "category": "access",
+      "description": "Unable to complete code review - GitHub MCP tools require permission to access pull request data. Please grant access to mcp__github__get_pull_request and mcp__github__get_pull_request_files to proceed with the review.",
+      "files": []
+    }
+  ],
+  "metadata": {
+    "analyzedAt": "2026-09-27T00:00:00Z",
+    "duration": 39320,
+    "agentVersions": {
+      "orchestrator": "1.0.0",
+      "code-quality-analyzer": "not-run",
+      "test-coverage-analyzer": "not-run",
+      "refactoring-suggester": "not-run"
+    }
+  }
+}

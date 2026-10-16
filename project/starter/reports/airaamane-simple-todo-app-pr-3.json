@@ -1,0 +1,33 @@
+{
+  "pullRequest": {
+    "owner": "airaamane",
+    "repo": "simple-todo-app",
+    "number": 3
+  },
+  "fileReviews": [],
+  "summary": {
+    "totalFiles": 0,
+    "overallScore": 0,
+    "criticalIssues": 0,
+    "highPriorityTests": 0,
+    "refactoringOpportunities": 0
+  },
+  "recommendations": [
+    {
+      "priority": "critical",
+      "category": "Access Required",
+      "description": "Unable to access pull request data. Please grant permissions to use GitHub MCP tools (mcp__github__get_pull_request and mcp__github__get_pull_request_files), gh CLI via Bash, or WebFetch to retrieve PR #3 from airaamane/simple-todo-app. Without access to the changed files and their contents, a comprehensive code review cannot be performed.",
+      "files": []
+    }
+  ],
+  "metadata": {
+    "analyzedAt": "2026-09-27T00:00:00Z",
+    "duration": 50041,
+    "agentVersions": {
+      "orchestrator": "1.0.0",
+      "code-quality-analyzer": "not-executed",
+      "test-coverage-analyzer": "not-executed",
+      "refactoring-suggester": "not-executed"
+    }
+  }
+}

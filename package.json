@@ -33,5 +33,8 @@
     "lesson-12-evaluating-agents/exercise/starter",
     "lesson-12-evaluating-agents/exercise/solution",
     "project/starter"
-  ]
+  ],
+  "devDependencies": {
+    "@mermaid-js/mermaid-cli": "^11.12.0"
+  }
 }
