@@ -9,7 +9,7 @@ export class ReportGenerator {
    * Generate a Markdown report for PR comments
    */
   generateMarkdownReport(report: ReviewReport): string {
-    const { summary, recommendations, fileReviews } = report;
+    const { executiveSummary, recommendations, fileAnalyses, metadata } = report;
 
     const formattedRecs = recommendations.slice(0, 5).map((rec, idx) => {
       const emoji = {
@@ -23,51 +23,72 @@ export class ReportGenerator {
    - Files: ${rec.files.join(', ')}`;
     }).join('\n\n');
 
-    const formattedFiles = fileReviews.map(review => {
-      const { file, codeQuality, testCoverage, refactorings } = review;
+    const formattedFiles = fileAnalyses
+      .filter(analysis => analysis.codeQuality || analysis.testCoverage)
+      .map(analysis => {
+        const { file, codeQuality, testCoverage, refactoring } = analysis;
 
-      const issueList = codeQuality.issues.slice(0, 3)
-        .map(i => `  - Line ${i.line}: \`${i.severity}\` ${i.description}`)
-        .join('\n');
+        const issueList = (codeQuality?.issues || [])
+          .slice(0, 3)
+          .map((i: any) => `  - Line ${i.line}: \`${i.severity}\` ${i.description}`)
+          .join('\n');
 
-      const testList = testCoverage.untestedPaths.slice(0, 2)
-        .map(p => `  - \`${p.location}\` (${p.priority} priority)`)
-        .join('\n');
+        const testList = (testCoverage?.untestedPaths || [])
+          .slice(0, 2)
+          .map((p: any) => `  - \`${p.location}\` (${p.priority} priority)`)
+          .join('\n');
 
-      const refactorList = refactorings.suggestions.slice(0, 2)
-        .map(s => `  - **${s.type}**: ${s.description}`)
-        .join('\n');
+        const refactorList = (refactoring?.suggestions || [])
+          .slice(0, 2)
+          .map((s: any) => `  - **${s.type}**: ${s.description}`)
+          .join('\n');
 
-      return `### 📄 \`${file}\`
+        const qualityScore = codeQuality?.overallScore ?? 0;
+        const coverage = testCoverage?.coverageEstimate ?? 0;
+        const issueCount = codeQuality?.issues.length ?? 0;
+        const testCount = testCoverage?.untestedPaths.length ?? 0;
+        const refactorCount = refactoring?.suggestions.length ?? 0;
 
-**Quality Score:** ${codeQuality.overallScore}/100 | **Coverage:** ~${testCoverage.coverageEstimate}%
+        return `### 📄 \`${file}\`
 
-#### Issues (${codeQuality.issues.length})
+**Quality Score:** ${qualityScore}/100 | **Coverage:** ~${coverage}%
+
+#### Issues (${issueCount})
 ${issueList || '  None found'}
-${codeQuality.issues.length > 3 ? `\n  *...and ${codeQuality.issues.length - 3} more*` : ''}
+${issueCount > 3 ? `\n  *...and ${issueCount - 3} more*` : ''}
 
-#### Test Gaps (${testCoverage.untestedPaths.length})
+#### Test Gaps (${testCount})
 ${testList || '  None found'}
-${testCoverage.untestedPaths.length > 2 ? `\n  *...and ${testCoverage.untestedPaths.length - 2} more*` : ''}
+${testCount > 2 ? `\n  *...and ${testCount - 2} more*` : ''}
 
-#### Refactoring Opportunities (${refactorings.suggestions.length})
+#### Refactoring Opportunities (${refactorCount})
 ${refactorList || '  None found'}
-${refactorings.suggestions.length > 2 ? `\n  *...and ${refactorings.suggestions.length - 2} more*` : ''}`;
-    }).join('\n\n---\n\n');
+${refactorCount > 2 ? `\n  *...and ${refactorCount - 2} more*` : ''}`;
+      })
+      .join('\n\n---\n\n');
 
     return `# 🔍 Code Review Report
 
-## Summary
+## Executive Summary
 
 | Metric | Value |
 |--------|-------|
-| **Overall Score** | ${summary.overallScore}/100 |
-| **Files Reviewed** | ${summary.totalFiles} |
-| **Critical Issues** | ${summary.criticalIssues} |
-| **High Priority Tests** | ${summary.highPriorityTests} |
-| **Refactoring Opportunities** | ${summary.refactoringOpportunities} |
+| **Overall Quality Score** | ${executiveSummary.overallQualityScore}/100 |
+| **Files Reviewed** | ${executiveSummary.totalFiles} |
+| **Files with Issues** | ${executiveSummary.filesWithIssues} |
+| **Critical Issues** | ${executiveSummary.criticalCount} |
+| **High Priority Issues** | ${executiveSummary.highCount} |
+| **Test Coverage** | ~${executiveSummary.estimatedTestCoverage}% |
 
-## 🎯 Top Recommendations
+## 🎯 Key Findings
+
+${executiveSummary.keyFindings.map((f: string) => `- ${f}`).join('\n') || 'No critical findings.'}
+
+## 📋 Recommended Actions
+
+${executiveSummary.recommendedActions.map((a: string) => `- ${a}`).join('\n')}
+
+## ✅ Top Recommendations
 
 ${formattedRecs || 'No recommendations at this time.'}
 
@@ -77,7 +98,7 @@ ${formattedFiles}
 
 ---
 
-*Generated at ${report.metadata.analyzedAt} • Duration: ${report.metadata.duration}ms*
+*Generated at ${metadata.analyzedAt} • Duration: ${Math.round(metadata.analysisDuration)}ms*
 `;
   }
 
@@ -85,9 +106,9 @@ ${formattedFiles}
    * Generate an HTML report for web display
    */
   generateHTMLReport(report: ReviewReport): string {
-    const { summary, recommendations, metadata } = report;
+    const { executiveSummary, recommendations, metadata } = report;
 
-    const recList = recommendations.slice(0, 5).map(r => `
+    const recList = recommendations.slice(0, 5).map((r: any) => `
       <li class="rec-${r.priority}">
         <span class="priority">[${r.priority.toUpperCase()}]</span>
         <strong>${r.category}</strong>: ${r.description}
@@ -141,27 +162,27 @@ ${formattedFiles}
 </head>
 <body>
   <h1>🔍 Code Review Report</h1>
-  
+
   <div class="summary">
     <div class="metric">
-      <div class="metric-value">${summary.overallScore}</div>
-      <div class="metric-label">Overall Score</div>
+      <div class="metric-value">${executiveSummary.overallQualityScore}</div>
+      <div class="metric-label">Quality Score</div>
     </div>
     <div class="metric">
-      <div class="metric-value">${summary.totalFiles}</div>
+      <div class="metric-value">${executiveSummary.totalFiles}</div>
       <div class="metric-label">Files Reviewed</div>
     </div>
     <div class="metric">
-      <div class="metric-value">${summary.criticalIssues}</div>
+      <div class="metric-value">${executiveSummary.criticalCount}</div>
       <div class="metric-label">Critical Issues</div>
     </div>
     <div class="metric">
-      <div class="metric-value">${summary.highPriorityTests}</div>
-      <div class="metric-label">Tests Needed</div>
+      <div class="metric-value">${executiveSummary.highCount}</div>
+      <div class="metric-label">High Issues</div>
     </div>
     <div class="metric">
-      <div class="metric-value">${summary.refactoringOpportunities}</div>
-      <div class="metric-label">Refactorings</div>
+      <div class="metric-value">${executiveSummary.estimatedTestCoverage}%</div>
+      <div class="metric-label">Test Coverage</div>
     </div>
   </div>
 
@@ -169,7 +190,7 @@ ${formattedFiles}
   <ul>${recList || '<li>No recommendations at this time.</li>'}</ul>
 
   <footer>
-    Generated at ${metadata.analyzedAt} • Duration: ${metadata.duration}ms
+    Generated at ${metadata.analyzedAt} • Duration: ${Math.round(metadata.analysisDuration)}ms
   </footer>
 </body>
 </html>`;

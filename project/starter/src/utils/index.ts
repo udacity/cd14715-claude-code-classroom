@@ -1,21 +1,22 @@
 /**
  * Utility exports
  *
- * NOTE: Logger and ReportGenerator are provided
- * TODO: Complete error handler and rate limiter implementations,
- *       then uncomment the exports below
+ * NOTE: Logger, ReportGenerator, and SynthesisEngine are provided
  */
 
 export { logger } from './logger.js';
 export { ReportGenerator } from './report-generator.js';
+export { SynthesisEngine } from './synthesis-engine.js';
+export type { SynthesisResult } from './synthesis-engine.js';
 
-// TODO: Uncomment these exports after completing the implementations
-// export { RateLimiter, globalRateLimiter, withRateLimit } from './rate-limiter.js';
-// export {
-//   ReviewError,
-//   ErrorCodes,
-//   withRetry,
-//   withTimeout,
-//   isReviewError,
-//   formatError
-// } from './error-handler.js';
+export { RateLimiter, globalRateLimiter, withRateLimit } from './rate-limiter.js';
+export type { RateLimiterConfig } from './rate-limiter.js';
+export {
+  ReviewError,
+  ErrorCodes,
+  withRetry,
+  withTimeout,
+  isReviewError,
+  formatError
+} from './error-handler.js';
+export type { ErrorCode } from './error-handler.js';

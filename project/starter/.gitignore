@@ -9,4 +9,4 @@ logs/
 coverage/
 *.tsbuildinfo
 .temp/
-reports/
+

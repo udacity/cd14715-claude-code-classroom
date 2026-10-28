@@ -1,0 +1,425 @@
+/**
+ * Demo Script: Multi-Agent PR Analysis System
+ *
+ * This script demonstrates the multi-agent code review system
+ * by generating sample analysis results and creating reports.
+ *
+ * Run with: npx tsx demo.ts
+ */
+
+import * as fs from 'fs';
+import * as path from 'path';
+import { ReportGenerator } from './src/utils/report-generator.js';
+import { ReviewReport } from './src/types/report-types.js';
+
+/**
+ * Create sample analysis data to demonstrate the system
+ */
+function createSampleReport(): ReviewReport {
+  return {
+    metadata: {
+      prNumber: 12345,
+      prTitle: 'Add new authentication module with OAuth2 support',
+      author: 'alice',
+      repository: 'company/product',
+      analyzedAt: new Date().toISOString(),
+      analysisDuration: 45000,
+      analysisVersion: '1.0.0'
+    },
+
+    executiveSummary: {
+      totalFiles: 3,
+      filesWithIssues: 2,
+      criticalCount: 1,
+      highCount: 2,
+      mediumCount: 3,
+      overallQualityScore: 72,
+      estimatedTestCoverage: 65,
+      keyFindings: [
+        'Security vulnerability in login validation (SQL injection risk)',
+        'Missing tests for OAuth2 token refresh logic',
+        'Complex nested authentication flow needs refactoring'
+      ],
+      recommendedActions: [
+        'Fix SQL injection vulnerability in login endpoint',
+        'Add comprehensive tests for OAuth2 integration',
+        'Refactor authentication state management',
+        'Implement rate limiting on auth endpoints'
+      ]
+    },
+
+    fileAnalyses: [
+      {
+        file: 'src/auth/login.ts',
+        codeQuality: {
+          file: 'src/auth/login.ts',
+          issues: [
+            {
+              type: 'security',
+              severity: 'critical',
+              line: 45,
+              category: 'security',
+              description: 'SQL injection vulnerability in user query',
+              message: 'User input not properly parameterized in database query',
+              suggestion: 'Use prepared statements or ORM with parameterized queries'
+            },
+            {
+              type: 'error-handling',
+              severity: 'high',
+              line: 67,
+              category: 'best-practice',
+              description: 'Missing error handling for database connection',
+              message: 'Unhandled promise rejection in async function',
+              suggestion: 'Add try-catch block or .catch() handler'
+            },
+            {
+              type: 'performance',
+              severity: 'medium',
+              line: 89,
+              category: 'performance',
+              description: 'Synchronous password hashing blocks event loop',
+              message: 'Use bcrypt.hashAsync() for non-blocking operation',
+              suggestion: 'Replace bcrypt.hashSync() with bcrypt.hash()'
+            }
+          ],
+          summary: 'File has critical security issue that must be fixed before merging',
+          overallScore: 45,
+          highlights: [
+            'Good input validation for email format',
+            'Proper password requirements enforcement'
+          ]
+        },
+        testCoverage: {
+          file: 'src/auth/login.ts',
+          hasTests: true,
+          testFiles: ['tests/auth/login.test.ts'],
+          untestedPaths: [
+            {
+              type: 'branch',
+              location: 'login() -> OAuth callback handler',
+              priority: 'critical',
+              reasoning: 'OAuth token validation is critical for security',
+              suggestedTest: 'Test invalid OAuth tokens are rejected'
+            },
+            {
+              type: 'edge-case',
+              location: 'login() -> Network timeout retry',
+              priority: 'high',
+              reasoning: 'Retry logic should handle multiple failure scenarios',
+              suggestedTest: 'Mock network timeouts and verify retry behavior'
+            }
+          ],
+          coverageEstimate: 55,
+          summary: 'Basic tests exist but critical OAuth paths lack coverage',
+          recommendations: [
+            'Add tests for invalid OAuth tokens',
+            'Test retry logic with network failures',
+            'Add tests for rate limiting'
+          ]
+        },
+        refactoring: {
+          file: 'src/auth/login.ts',
+          suggestions: [
+            {
+              type: 'extract-function',
+              location: 'lines 40-120',
+              impact: 'high',
+              pattern: 'Extract OAuth validation logic',
+              priority: 'high',
+              currentApproach: 'All authentication logic in single 80-line function',
+              proposedApproach: 'Extract OAuth validation, password check, and session creation into separate functions',
+              benefits: 'Improved testability, reusability, and maintainability'
+            },
+            {
+              type: 'simplify',
+              location: 'lines 65-89',
+              impact: 'medium',
+              pattern: 'Nested conditionals reduce readability',
+              priority: 'medium',
+              currentApproach: 'Deep nested if/else statements (3 levels deep)',
+              proposedApproach: 'Use guard clauses or early returns',
+              benefits: 'Improved readability and reduced cognitive complexity'
+            }
+          ],
+          summary: 'Authentication module has opportunity for better structure',
+          technicalDebtIndicators: [
+            'Mixed concerns (validation, hashing, session management)',
+            'Long functions with multiple responsibilities'
+          ]
+        },
+        analysisTime: 3500
+      },
+
+      {
+        file: 'src/auth/oauth.ts',
+        codeQuality: {
+          file: 'src/auth/oauth.ts',
+          issues: [
+            {
+              type: 'best-practice',
+              severity: 'high',
+              line: 34,
+              category: 'maintainability',
+              description: 'Magic string "OAUTH_STATE_PREFIX" repeated 3 times',
+              message: 'Hard-coded strings should be extracted as constants',
+              suggestion: 'Move to constants file: const OAUTH_STATE_PREFIX = "OAUTH_STATE_PREFIX"'
+            }
+          ],
+          summary: 'Generally good OAuth implementation with minor improvements',
+          overallScore: 82,
+          highlights: [
+            'Proper state validation prevents CSRF attacks',
+            'Secure token handling with encryption',
+            'Good separation of concerns'
+          ]
+        },
+        testCoverage: {
+          file: 'src/auth/oauth.ts',
+          hasTests: true,
+          testFiles: ['tests/auth/oauth.test.ts'],
+          untestedPaths: [
+            {
+              type: 'edge-case',
+              location: 'handleCallback() -> Token expiration handling',
+              priority: 'high',
+              reasoning: 'Token refresh on expiration is critical for user experience',
+              suggestedTest: 'Simulate expired tokens and verify refresh'
+            }
+          ],
+          coverageEstimate: 78,
+          summary: 'Good test coverage with one notable gap',
+          recommendations: [
+            'Add tests for token refresh flow'
+          ]
+        },
+        refactoring: {
+          file: 'src/auth/oauth.ts',
+          suggestions: [
+            {
+              type: 'modernize',
+              location: 'entire file',
+              impact: 'low',
+              pattern: 'Update to latest OAuth 2.0 best practices',
+              priority: 'low',
+              currentApproach: 'OAuth 2.0 implementation (2-3 years old pattern)',
+              proposedApproach: 'Align with latest OAuth 2.0 Security Best Current Practice',
+              benefits: 'Better security posture, modern standards compliance'
+            }
+          ],
+          summary: 'Code quality is good; minimal refactoring needed',
+          technicalDebtIndicators: []
+        },
+        analysisTime: 2800
+      },
+
+      {
+        file: 'src/auth/session.ts',
+        codeQuality: {
+          file: 'src/auth/session.ts',
+          issues: [],
+          summary: 'Well-written session management code',
+          overallScore: 88,
+          highlights: [
+            'Excellent error handling throughout',
+            'Clean, readable code structure',
+            'Proper use of TypeScript types'
+          ]
+        },
+        testCoverage: {
+          file: 'src/auth/session.ts',
+          hasTests: true,
+          testFiles: ['tests/auth/session.test.ts'],
+          untestedPaths: [],
+          coverageEstimate: 92,
+          summary: 'Excellent test coverage',
+          recommendations: []
+        },
+        refactoring: {
+          file: 'src/auth/session.ts',
+          suggestions: [],
+          summary: 'No refactoring needed',
+          technicalDebtIndicators: []
+        },
+        analysisTime: 2200
+      }
+    ],
+
+    synthesizedFindings: [
+      {
+        file: 'src/auth/login.ts',
+        pattern: 'Critical Security & Test Gap',
+        severity: 'critical',
+        relatedAgents: ['code-quality', 'test-coverage'],
+        description: 'SQL injection vulnerability in login module combined with missing OAuth token validation tests creates a high-risk scenario. This file should not be merged without addressing the security issue.',
+        recommendation: 'Priority 1: Fix SQL injection. Priority 2: Add OAuth security tests. This is a blocker.'
+      },
+      {
+        file: 'src/auth/login.ts',
+        pattern: 'Testability & Complexity',
+        severity: 'high',
+        relatedAgents: ['test-coverage', 'refactoring'],
+        description: 'The login function is too complex (80 lines, multiple responsibilities) which makes it difficult to test all paths. Extracting functions would improve both testability and coverage.',
+        recommendation: 'Extract OAuth validation and password checking into separate functions before merging. This improves test coverage and maintainability.'
+      }
+    ],
+
+    recommendations: [
+      {
+        id: 'sec-1',
+        priority: 'critical',
+        category: 'security',
+        description: 'Fix SQL injection vulnerability in login query',
+        files: ['src/auth/login.ts'],
+        estimatedEffort: 'medium',
+        impact: 'high'
+      },
+      {
+        id: 'test-1',
+        priority: 'high',
+        category: 'testing',
+        description: 'Add comprehensive tests for OAuth2 token validation and refresh',
+        files: ['src/auth/login.ts', 'src/auth/oauth.ts'],
+        estimatedEffort: 'high',
+        impact: 'high'
+      },
+      {
+        id: 'arch-1',
+        priority: 'high',
+        category: 'architecture',
+        description: 'Extract authentication logic into separate functions for better testability',
+        files: ['src/auth/login.ts'],
+        estimatedEffort: 'high',
+        impact: 'medium'
+      },
+      {
+        id: 'code-1',
+        priority: 'medium',
+        category: 'code-quality',
+        description: 'Extract magic strings to constants file',
+        files: ['src/auth/oauth.ts'],
+        estimatedEffort: 'low',
+        impact: 'low'
+      },
+      {
+        id: 'perf-1',
+        priority: 'medium',
+        category: 'performance',
+        description: 'Use async password hashing to avoid blocking event loop',
+        files: ['src/auth/login.ts'],
+        estimatedEffort: 'medium',
+        impact: 'medium'
+      }
+    ],
+
+    pullRequest: {
+      owner: 'company',
+      repo: 'product',
+      number: 12345
+    },
+
+    summary: {
+      totalFiles: 3,
+      overallScore: 72,
+      criticalIssues: 1,
+      highPriorityTests: 2,
+      refactoringOpportunities: 2
+    }
+  };
+}
+
+/**
+ * Main demo function
+ */
+async function runDemo() {
+  console.log('\n' + '='.repeat(70));
+  console.log('  Multi-Agent PR Analysis System - Demo Report Generation');
+  console.log('='.repeat(70) + '\n');
+
+  // Create sample report
+  console.log('📋 Creating sample analysis report...');
+  const sampleReport = createSampleReport();
+
+  // Create reports directory
+  const reportsDir = path.join(process.cwd(), 'reports');
+  if (!fs.existsSync(reportsDir)) {
+    fs.mkdirSync(reportsDir, { recursive: true });
+    console.log(`📁 Created reports directory: ${reportsDir}`);
+  }
+
+  // Generate reports
+  const reportGenerator = new ReportGenerator();
+
+  // Generate Markdown report
+  console.log('\n📄 Generating Markdown report...');
+  const markdownReport = reportGenerator.generateMarkdownReport(sampleReport);
+  const mdPath = path.join(reportsDir, 'demo-analysis.md');
+  fs.writeFileSync(mdPath, markdownReport, 'utf-8');
+  console.log(`✅ Markdown report: ${mdPath}`);
+  console.log(`   Size: ${Math.round(markdownReport.length / 1024)}KB`);
+
+  // Generate HTML report
+  console.log('\n🌐 Generating HTML report...');
+  const htmlReport = reportGenerator.generateHTMLReport(sampleReport);
+  const htmlPath = path.join(reportsDir, 'demo-analysis.html');
+  fs.writeFileSync(htmlPath, htmlReport, 'utf-8');
+  console.log(`✅ HTML report: ${htmlPath}`);
+  console.log(`   Size: ${Math.round(htmlReport.length / 1024)}KB`);
+
+  // Generate JSON report
+  console.log('\n📊 Generating JSON report...');
+  const jsonReport = reportGenerator.generateJSONReport(sampleReport);
+  const jsonPath = path.join(reportsDir, 'demo-analysis.json');
+  fs.writeFileSync(jsonPath, jsonReport, 'utf-8');
+  console.log(`✅ JSON report: ${jsonPath}`);
+  console.log(`   Size: ${Math.round(jsonReport.length / 1024)}KB`);
+
+  // Print summary
+  console.log('\n' + '='.repeat(70));
+  console.log('  Demo Report Summary');
+  console.log('='.repeat(70));
+  console.log(`\n📌 PR: ${sampleReport.metadata.repository}#${sampleReport.metadata.prNumber}`);
+  console.log(`📝 Title: ${sampleReport.metadata.prTitle}`);
+  console.log(`👤 Author: ${sampleReport.metadata.author}`);
+  console.log(`\n📊 Analysis Results:`);
+  console.log(`   • Files analyzed: ${sampleReport.executiveSummary.totalFiles}`);
+  console.log(`   • Files with issues: ${sampleReport.executiveSummary.filesWithIssues}`);
+  console.log(`   • Quality score: ${sampleReport.executiveSummary.overallQualityScore}/100`);
+  console.log(`   • Critical issues: ${sampleReport.executiveSummary.criticalCount}`);
+  console.log(`   • High issues: ${sampleReport.executiveSummary.highCount}`);
+  console.log(`   • Test coverage: ~${sampleReport.executiveSummary.estimatedTestCoverage}%`);
+
+  console.log(`\n🎯 Key Findings:`);
+  sampleReport.executiveSummary.keyFindings.forEach((finding, i) => {
+    console.log(`   ${i + 1}. ${finding}`);
+  });
+
+  console.log(`\n✅ Recommendations:`);
+  sampleReport.recommendations.slice(0, 5).forEach((rec, i) => {
+    const icon = {
+      critical: '🚨',
+      high: '⚠️',
+      medium: '📝',
+      low: '💡'
+    }[rec.priority];
+    console.log(`   ${i + 1}. ${icon} [${rec.priority.toUpperCase()}] ${rec.category}: ${rec.description}`);
+  });
+
+  console.log(`\n📂 Reports generated in: ${reportsDir}`);
+  console.log(`   • demo-analysis.md   - Markdown format (GitHub-friendly)`);
+  console.log(`   • demo-analysis.html - HTML format (Interactive visualization)`);
+  console.log(`   • demo-analysis.json - JSON format (Programmatic use)`);
+
+  console.log('\n' + '='.repeat(70));
+  console.log('  System is Ready! To analyze a real PR:');
+  console.log('='.repeat(70));
+  console.log('\n  npm run dev -- <owner> <repo> <pr-number>');
+  console.log('\n  Example:');
+  console.log('  npm run dev -- facebook react 12345\n');
+  console.log('Reports will be generated in ./reports/ folder\n');
+}
+
+// Run demo
+runDemo().catch(err => {
+  console.error('❌ Error running demo:', err);
+  process.exit(1);
+});
