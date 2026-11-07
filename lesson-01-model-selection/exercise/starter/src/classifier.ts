@@ -9,6 +9,7 @@
 
 import Anthropic from "@anthropic-ai/sdk";
 import { MODELS, ModelKey } from "./models.js";
+import { TICKETS } from "./sample-tickets.js";
 import { calculateCost, logStats, displayComparison, ensureParsedResponse } from "./helpers.js";
 import { Message, Model } from "@anthropic-ai/sdk/resources";
 import dotenv from "dotenv";
@@ -33,12 +34,14 @@ async function callClaude(modelKey: ModelKey, system: string, userMessage: strin
   //  const response = ensureParsedResponse(rawResponse as any); // Required for Vocareum
 
   const ms = Date.now() - start;
+  // TODO: Replace these placeholders with response.usage.input_tokens and response.usage.output_tokens
   const inputTokens = 0;
   const outputTokens = 0;
 
   const cost = calculateCost(inputTokens, outputTokens, model);
 
 
+  // TODO: Replace this placeholder with the text of the first content block in the response
   const text = "";
 
   return { text, inputTokens, outputTokens, ms, cost };

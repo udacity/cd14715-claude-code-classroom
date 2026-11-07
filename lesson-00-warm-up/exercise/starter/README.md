@@ -22,7 +22,8 @@ src/
 
 ```bash
 # From the repo root
-npm install --workspace lesson-00-warm-up/exercise/starter
+cd lesson-00-warm-up/exercise/starter
+npm install
 ```
 
 ## Authentication Setup
