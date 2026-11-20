@@ -1,37 +1,21 @@
 {
-  "name": "cd14715-claude-code-classroom",
-  "private": true,
-  "workspaces": [
-    "lesson-01-model-selection/demo",
-    "lesson-01-model-selection/exercise/starter",
-    "lesson-01-model-selection/exercise/solution",
-    "lesson-02-extended-thinking/demo",
-    "lesson-02-extended-thinking/exercise/starter",
-    "lesson-02-extended-thinking/exercise/solution",
-    "lesson-05-agent-sdk/demo",
-    "lesson-05-agent-sdk/exercise/starter",
-    "lesson-05-agent-sdk/exercise/solution",
-    "lesson-06-custom-tools/demo",
-    "lesson-06-custom-tools/exercise/starter",
-    "lesson-06-custom-tools/exercise/solution",
-    "lesson-07-structured-outputs/demo",
-    "lesson-07-structured-outputs/exercise/starter",
-    "lesson-07-structured-outputs/exercise/solution",
-    "lesson-08-claude-skills/demo",
-    "lesson-08-claude-skills/exercise/starter",
-    "lesson-08-claude-skills/exercise/solution",
-    "lesson-09-mcp-integration/demo",
-    "lesson-09-mcp-integration/exercise/starter",
-    "lesson-09-mcp-integration/exercise/solution",
-    "lesson-10-multi-agent-orchestration/demo",
-    "lesson-10-multi-agent-orchestration/exercise/starter",
-    "lesson-10-multi-agent-orchestration/exercise/solution",
-    "lesson-11-tdd-with-ai/demo",
-    "lesson-11-tdd-with-ai/exercise/starter",
-    "lesson-11-tdd-with-ai/exercise/solution",
-    "lesson-12-evaluating-agents/demo",
-    "lesson-12-evaluating-agents/exercise/starter",
-    "lesson-12-evaluating-agents/exercise/solution",
-    "project/starter"
-  ]
+  "name": "enterprise-code-review-agent",
+  "version": "1.0.0",
+  "private": "true",
+  "type": "module",
+  "scripts": {
+    "start": "tsx src/main.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.6",
+    "tsx": "^4.23.15",
+    "typescript": "^7.0.2"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^1.11.0",
+    "@modelcontextprotocol/sdk": "^1.32.2",
+    "dotenv": "^18.0.10",
+    "zod": "^4.6.7"
+  }
 }
