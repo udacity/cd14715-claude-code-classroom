@@ -75,10 +75,12 @@ export class RateLimiter {
     this.activeRequests = Math.max(0, this.activeRequests - 1);
 
     // Update last request with actual token count if provided
-    if (actualTokens !== undefined && this.requestHistory.length > 0) {
-      const lastRequest = this.requestHistory[this.requestHistory.length - 1];
-      lastRequest.tokens = actualTokens;
-    }
+if (actualTokens !== undefined) {
+  const lastRequest = this.requestHistory[this.requestHistory.length - 1];
+  if (lastRequest) {
+    lastRequest.tokens = actualTokens;
+  }
+}
 
     // Wake up next waiting request
     const next = this.waitQueue.shift();
