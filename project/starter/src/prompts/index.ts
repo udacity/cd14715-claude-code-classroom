@@ -1,11 +1,5 @@
-/**
- * Centralized prompt management
- *
- * TODO: Export all your prompts here
- *
- * Example:
- * export { buildOrchestratorPrompt } from './orchestrator.prompt';
- * export { CODE_QUALITY_ANALYZER_PROMPT } from './code-quality-analyzer.prompt';
- * export { TEST_COVERAGE_ANALYZER_PROMPT } from './test-coverage-analyzer.prompt';
- * export { REFACTORING_SUGGESTER_PROMPT } from './refactoring-suggester.prompt';
- */
+export const CODE_QUALITY_PROMPT = `Review the provided pull request files for correctness, security, performance, maintainability, and style. Report only actionable issues, with accurate line numbers. Return JSON matching CodeQualityResultSchema: file, issues (line, severity, category, description, suggestion), overallScore (0-100), and summary. Do not invent findings.`;
+
+export const TEST_COVERAGE_PROMPT = `Review the provided pull request files for meaningful test gaps. Identify untested functions, classes, branches, and edge cases, and suggest specific tests. Return JSON matching TestCoverageResultSchema: file, hasTests, testFiles, untestedPaths (type, location, priority, reasoning, suggestedTest), coverageEstimate (0-100), and summary. Do not claim measured coverage unless evidence is provided.`;
+
+export const REFACTORING_PROMPT = `Review the provided pull request files for worthwhile, behavior-preserving refactoring opportunities. Avoid style-only nitpicks and do not propose changes unrelated to the diff. Return JSON matching RefactoringSuggestionSchema: file, suggestions (type, location, impact, description, before, after, benefits), and summary. Return an empty suggestions array when appropriate.`;
